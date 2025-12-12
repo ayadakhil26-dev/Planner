@@ -1,7 +1,34 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ayas Planer – Firebase Sync</title>
+
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+apiKey: "AIzaSyDXFomtJapsasxvWd4eowUBDxZnnj6AgbM",
+authDomain: "planner-ecd50.firebaseapp.com",
+projectId: "planner-ecd50",
+storageBucket: "planner-ecd50.firebasestorage.app",
+messagingSenderId: "510493352134",
+appId: "1:510493352134:web:e2baa09d268e262358b7c7"
+};
+
+
+window.firebaseApp = initializeApp(firebaseConfig);
+window.db = getFirestore(firebaseApp);
+</script>
+
+
+</head>
+<body>    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ayas Planer</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
@@ -3144,8 +3171,86 @@ document.addEventListener('click', (e) => {
     }
 });
 
-    </script>
+   
  </div>
     </div>
+
+
+<script type="module">
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+// Globale Datenstruktur
+const data = {
+todos: {},
+daySchedule: {},
+stundenplan: { Montag: {}, Dienstag: {}, Mittwoch: {}, Donnerstag: {}, Freitag: {} },
+exams: [],
+grades: [],
+habits: [],
+notes: [],
+mood: {},
+theme: "pink",
+categoryColors: { schule: "#7eb5d6", freizeit: "#f4b5c5", haushalt: "#b8d4b8", sonstiges: "#e8c490" }
+};
+
+
+// =========================
+// FIREBASE LADEN
+// =========================
+async function loadData() {
+try {
+const ref = doc(db, "users", "aya");
+const snap = await getDoc(ref);
+
+
+if (snap.exists()) {
+Object.assign(data, snap.data());
+console.log("✔ Firebase geladen");
+} else {
+console.log("Erste Nutzung – Firebase leer");
+}
+
+
+} catch (err) {
+console.error("Fehler beim Firebase-Laden", err);
+}
+}
+
+
+// =========================
+// FIREBASE SPEICHERN (mit Delay)
+// =========================
+let saveTimeout;
+
+
+function saveDataThrottled() {
+clearTimeout(saveTimeout);
+saveTimeout = setTimeout(() => saveData(), 300);
+}
+
+
+async function saveData() {
+try {
+await setDoc(doc(db, "users", "aya"), data);
+console.log("✔ Firebase gespeichert");
+} catch (err) {
+console.error("Fehler beim Firebase-Speichern", err);
+}
+}
+
+
+// =========================
+// STARTUP
+// =========================
+await loadData();
+// Danach musst du hier deine Render-Funktionen aufrufen:
+// renderTodos();
+// renderMonth();
+// renderStundenplan();
+// usw.
+
+
+</script>
 </body>
 </html>
