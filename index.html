@@ -1093,399 +1093,158 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
             cursor: pointer;
         }
 
-        @media (max-width: 768px) {
+    /* ============================= */
+/* Mobile-Optimierung (Handy)   */
+/* ============================= */
+@media (max-width: 768px) {
+    /* Allgemeine Body-Einstellungen */
     body {
-        font-size: 16px;
+        font-size: 14px;
         padding: 5px;
     }
 
-    /* Sidebar auf Mobile schmal */
+    /* Hamburger Menu sichtbar */
+    .hamburger {
+        display: flex;
+    }
+
+    /* Sidebar ausblenden / Slide-Effekt */
     .sidebar {
-        width: 60px;
-        padding: 10px 0;
- transform: translateX(-100%);
-transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* <-- Smooth ease */
-    }
-    
-    .sidebar-logo {
-        font-size: 1.2em;
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        margin-bottom: 20px;
-    }
-    
-    .sidebar-btn {
-        padding: 12px 5px;
-        justify-content: center;
-        font-size: 1.8em;
-    }
-    
-    .sidebar-btn span:last-child {
-        display: none; /* Text verstecken */
-    }
-    
-    .content-wrapper {
-        margin-left: 60px;
-        padding: 5px;
+        width: 220px; /* volle Breite beim Öffnen */
+        transform: translateX(-100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 1000;
+        background: var(--sidebar-bg);
+        overflow-y: auto;
     }
 
-    .container {
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Sidebar Inhalt */
+    .sidebar-logo {
+        font-size: 1.5em;
+        writing-mode: horizontal-tb;
+        text-orientation: mixed;
+        margin-bottom: 15px;
+    }
+
+    .sidebar-btn {
+        justify-content: flex-start;
+        font-size: 1em;
         padding: 10px;
     }
 
-    /* Datum/Uhrzeit Banner */
-    .datetime-widget {
-        padding: 15px 10px;
+    /* Content Wrapper anpassen */
+    .content-wrapper {
+        margin-left: 0;
+        padding: 5px;
+    }
+
+    /* Widgets & Container */
+    .container, .widgets, .category-btns, .stats-grid, .theme-grid {
+        width: 100%;
+        display: flex;
         flex-direction: column;
-        gap: 15px;
-    }
-
-    .datetime-widget > div {
-        flex-direction: column !important;
-        gap: 10px !important;
-        text-align: center !important;
-    }
-
-    .datetime-widget > div > div {
-        text-align: center !important;
-        flex: 1 !important;
-    }
-
-    .mood-selector {
-        justify-content: center;
-        font-size: 1.5em;
         gap: 10px;
     }
 
-    .datetime-date {
-        font-size: 2.2em !important;
+    /* Todo / Inputs */
+    .todo-controls, .habit-days, .timer-btns {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
     }
 
-    .datetime-time {
-        font-size: 2.8em !important;
+    input, textarea, select, .pretty-btn, .cat-btn, .timer-btn {
+        width: 100%;
+        font-size: 1em;
+        padding: 10px;
     }
 
-    .datetime-day {
-        font-size: 1.8em !important;
-    }
-
-    /* Überschriften */
+    /* Überschriften / Widgets */
     h1 {
-        font-size: 2.5em;
+        font-size: 2em;
         margin-bottom: 10px;
     }
 
     .section-title {
-        font-size: 2em;
-        margin-bottom: 12px;
-    }
-
-    /* Widgets Grid */
-    .widgets {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    /* Buttons */
-    .category-btns {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-
-    .cat-btn {
-        padding: 12px 8px;
-        font-size: 0.95em;
-    }
-
-    /* Todo Items */
-    .todo-item {
-        padding: 12px;
-        gap: 8px;
-    }
-
-    .todo-input {
-        font-size: 1em;
-    }
-
-    .todo-controls {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .todo-deadline, .priority-select {
-        width: 100%;
-        min-width: unset;
-    }
-
-    /* Kalender */
-    .calendar-nav {
-        padding: 10px;
-        flex-wrap: wrap;
-    }
-
-    .calendar-title {
         font-size: 1.5em;
-        width: 100%;
-        order: -1;
         margin-bottom: 10px;
     }
 
-    .nav-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2em;
+    .datetime-widget {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
     }
 
-    .cal-header {
-        font-size: 0.85em;
-        padding: 6px 2px;
+    .datetime-time { font-size: 2em; }
+    .datetime-date { font-size: 1.5em; }
+    .datetime-day { font-size: 1.2em; }
+
+    /* Kalender */
+    .calendar-nav {
+        flex-wrap: wrap;
+        gap: 5px;
     }
 
-    .cal-day {
-        min-height: 50px;
-        padding: 4px;
-    }
-
-    .day-num {
-        font-size: 1.1em;
-    }
-
-    .exam-label {
-        font-size: 0.7em;
-    }
+    .calendar-title { font-size: 1.2em; width: 100%; }
+    .nav-btn { width: 35px; height: 35px; font-size: 1em; }
+    .cal-header { font-size: 0.8em; padding: 4px 2px; }
+    .cal-day { min-height: 40px; padding: 2px; }
+    .day-num { font-size: 1em; }
 
     /* Stundenplan */
-    .stundenplan-grid {
-        grid-template-columns: 70px repeat(5, 1fr);
-        gap: 4px;
-        font-size: 0.85em;
-    }
-
-    .sp-header {
-        font-size: 0.9em;
-        padding: 8px 4px;
-    }
-
-    .sp-cell {
-        padding: 6px 4px;
-        font-size: 0.85em;
-        min-height: 45px;
-    }
-
-    .sp-time {
-        font-size: 0.8em;
-    }
-
-    .sp-input {
-        font-size: 0.9em;
-    }
-
-    /* Klausuren & Noten */
-    .exam-item, .grade-item {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .exam-date-input, .exam-subject-input,
-    .grade-subject, .grade-value, .grade-type {
-        width: 100%;
-        min-width: unset;
-    }
-
-    /* Gewohnheiten */
-    .habit-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-.habit-colors {
-    --habit-1: #ff6b9d;
-    --habit-2: #c44569;
-    --habit-3: #ffa502;
-    --habit-4: #ff6348;
-    --habit-5: #1e90ff;
-    --habit-6: #2ed573;
-    --habit-7: #a29bfe;
-    --habit-8: #fd79a8;
-    --habit-9: #fdcb6e;
-    --habit-10: #6c5ce7;
-}
-    .habit-name {
-        width: 100%;
-        min-width: unset;
-    }
-
-    .habit-days {
-        width: 100%;
-        justify-content: space-between;
-    }
+    .stundenplan-grid { grid-template-columns: 60px repeat(5, 1fr); gap: 3px; font-size: 0.8em; }
+    .sp-header { font-size: 0.8em; padding: 6px 3px; }
+    .sp-cell { padding: 4px 2px; font-size: 0.75em; min-height: 35px; }
 
     /* Pomodoro Timer */
-    .timer-display {
-        font-size: 3em;
-    }
+    .timer-display { font-size: 2em; }
+    .timer-settings { flex-direction: column; gap: 8px; }
+    .timer-input, .timer-btn { width: 100%; }
 
-    .timer-settings {
-        flex-direction: column;
-        gap: 10px;
-    }
+    /* Notes / Modal */
+    .notes-carousel { gap: 10px; padding: 5px 0; }
+    .modal-content { padding: 10px; max-height: calc(100vh - 20px); }
+    .modal-title { font-size: 1.5em; }
 
-    .timer-input {
-        width: 100%;
-    }
-
-    .timer-btns {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .timer-btn {
-        width: 100%;
-        padding: 12px;
-    }
-.pretty-btn {
-    background: var(--primary);
-    border: 3px solid var(--accent);
-    color: white;
-    padding: 14px 24px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Patrick Hand', cursive;
-    font-size: 1.1em;
-    transition: 0.3s;
-    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
-    width: 100%;
+    /* Sonstiges */
+    .pretty-btn { font-size: 1em; padding: 12px; }
+    .delete-btn { width: 35px; height: 35px; font-size: 1em; }
+    .filter-btn, .filter-option { font-size: 1em; padding: 10px; }
 }
 
-.pretty-btn:hover {
-    background: var(--accent);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 4px 4px 0 rgba(212, 134, 156, 0.4);
+/* Extra kleine Handys (< 480px) */
+@media (max-width: 480px) {
+    .datetime-time { font-size: 1.5em; }
+    .datetime-date { font-size: 1.2em; }
+    h1 { font-size: 1.5em; }
+    .section-title { font-size: 1.2em; }
+    .cat-btn, .pretty-btn { font-size: 0.9em; padding: 8px; }
 }
 
-.pretty-btn:active {
-    transform: translateY(0);
-    box-shadow: 2px 2px 0 rgba(212, 134, 156, 0.3);
-}
-
-    /* Notizen Carousel */
-    .notes-carousel {
-        gap: 15px;
-        padding: 10px 0;
-    }
-
-    /* Modal */
-    .modal-content {
-        padding: 15px;
-        max-height: calc(100vh - 20px);
-    }
-
-    .modal-title {
-        font-size: 1.8em;
-    }
-
-    /* Settings */
-    .theme-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-
-    .theme-option {
-        width: 100%;
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .stat-card {
-        padding: 12px;
-    }
-
-    .stat-value {
-        font-size: 2em;
-    }
-
-    /* Tabs */
-    .tabs {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .tab-btn {
-        padding: 8px 15px;
-        font-size: 1em;
-    }
-
-    /* Buttons */
-    .pretty-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 1em;
-    }
-
-    .delete-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 1.1em;
-    }
-
-    /* Filter Dropdown */
-    .filter-btn {
-        font-size: 1em;
-        padding: 12px;
-    }
-
-    .filter-option {
-        font-size: 1em;
-        padding: 12px;
-    }
-}
-/* Hamburger Menu Button */
-.hamburger {
-    display: none;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 999;
-    background: var(--primary);
-    border: none;
-    color: white;
-    width: 45px;
-    height: 45px;
-    border-radius: 5px;
-    cursor: pointer;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-}
-
-.hamburger span {
-    width: 25px;
-    height: 3px;
-    background: white;
-    border-radius: 2px;
-    transition: 0.3s;
-}
-/* Overlay für Mobile wenn Sidebar offen */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-}
-
-.sidebar-overlay.active {
-    display: block;
-}
 
 /* Desktop: Sidebar auf Hover */
 @media (min-width: 769px) {
