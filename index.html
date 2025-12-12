@@ -1,0 +1,3151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayas Planer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #d4869c;
+            --accent: #f4b5c5;
+            --schule: #7eb5d6;
+            --freizeit: #f4b5c5;
+            --haushalt: #b8d4b8;
+            --sonstiges: #e8c490;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Patrick Hand', cursive;
+            background: #fff9f5;
+            padding: 10px;
+            font-size: 22px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 5px;
+            padding: 70px;
+            border: 3px solid var(--primary);
+            box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
+        }
+
+       .datetime-widget {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+  position: relative;
+  z-index: 550; /* oben halten */
+}
+
+/* Abstand unter dem Header, falls nötig */
+.notes-carousel {
+  margin-top: 10px; /* kleiner Wert, damit es nicht so viel Luft hat, aber nicht drunter */
+}
+.datetime-widget.scrolled {
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.datetime-date {
+    font-family: 'Caveat', cursive;
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.datetime-widget.scrolled .datetime-date {
+    font-size: 1.5em;
+    margin-bottom: 2px;
+}
+
+.datetime-time {
+    font-size: 2.5em;
+    font-weight: 600;
+    font-family: 'Patrick Hand', cursive;
+    transition: all 0.3s ease;
+}
+
+.datetime-widget.scrolled .datetime-time {
+    font-size: 1.8em;
+}
+
+.datetime-day {
+    font-size: 1.4em;
+    opacity: 0.95;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.datetime-widget.scrolled .datetime-day {
+    font-size: 1em;
+    margin-bottom: 2px;
+}
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2.5em, 8vw, 4em);
+            color: var(--primary);
+            text-align: center;
+            text-decoration: underline wavy var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .widgets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .widget {
+            background: #fef9fb;
+            border: 2px solid var(--accent);
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .widget-title {
+            font-family: 'Caveat', cursive;
+            font-size: 1.4em;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+       .mood-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 8px;
+    font-size: 1.5em;       /* kleiner, feiner */
+    padding: 5px 0;
+    margin-left: 10px;
+}
+
+        .mood-emoji {
+            cursor: pointer;
+    opacity: 0.6;
+    transition: 0.3s;
+    font-size: 0.9em;
+
+        }
+
+        .mood-emoji.selected, .mood-emoji:hover {
+            opacity: 1;
+            transform: scale(1.4);
+        }
+
+        .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    padding: 20px 0;
+    box-shadow: 3px 0 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    overflow-y: auto;
+transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth ease */
+    will-change: transform; /* Performance boost */
+}
+
+.sidebar-logo {
+letter-spacing: 1px;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    font-size: 2em;
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sidebar-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1em;
+    text-align: left;
+    transition: 0.3s;
+    border-left: 4px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+}
+
+.sidebar-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-left-color: white;
+}
+
+.sidebar-btn.active {
+    background: rgba(255,255,255,0.3);
+    border-left-color: white;
+    font-weight: 600;
+}
+
+.content-wrapper {
+    margin-left: 250px;
+    padding: 0;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto; 
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    min-height: 100vh;
+}
+
+/        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+ .school-tab-content { display: none; }
+        .school-tab-content.active { display: block; }
+        .section-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2em, 5vw, 2.8em);
+            color: var(--primary);
+            margin-bottom: 12px;
+            border-bottom: 3px dashed var(--accent);
+            padding-bottom: 12px;
+        }
+
+        .filter-dropdown {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .filter-btn {
+            width: 100%;
+            background: white;
+            border: 3px solid var(--primary);
+            padding: 14px;
+            font-family: 'Patrick Hand', cursive;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-menu {
+            display: none;
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 3px solid var(--primary);
+            border-top: none;
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .filter-menu.active { display: block; }
+
+        .filter-option {
+            padding: 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #fce4ec;
+            font-size: 1.05em;
+        }
+
+        .filter-option:hover {
+            background: #fef9fb;
+        }
+
+        .category-btns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .cat-btn {
+            padding: 14px;
+            border: 3px solid;
+            background: white;
+            cursor: pointer;
+            font-family: 'Patrick Hand', cursive;
+            transition: 0.3s;
+            font-size: 1.05em;
+            text-align: center;
+        }
+
+        .cat-btn:active {
+            transform: scale(0.95);
+        }
+
+        .todo-paper {
+            background: #fef9fb;
+            padding: 20px;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 97%, 98% 99%, 95% 97%, 92% 99%, 88% 98%, 85% 100%, 80% 98%, 75% 99%, 70% 97%, 65% 100%, 60% 98%, 55% 99%, 50% 97%, 45% 100%, 40% 98%, 35% 99%, 30% 97%, 25% 100%, 20% 98%, 15% 99%, 10% 97%, 5% 100%, 2% 98%, 0 99%);
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            width: 100%;
+            height: 35px;
+            background: #f0f0f0;
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            transition: 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .todo-item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 15px;
+            background: white;
+            border-radius: 3px;
+            border-left: 5px solid;
+        }
+
+        .todo-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .todo-checkbox {
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            accent-color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .todo-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.1em;
+            outline: none;
+            min-width: 0;
+        }
+
+        .todo-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .todo-deadline, .priority-select {
+            border: 2px solid var(--accent);
+            padding: 8px 10px;
+            border-radius: 3px;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1em;
+            flex: 1;
+            min-width: 110px;
+        }
+
+        .delete-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+.tabs .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--accent);
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: "Patrick Hand", cursive;
+    font-size: 1.1em;
+    transition: 0.2s;
+}
+
+.tabs .tab-btn.active {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+}
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            background: #fef9fb;
+            padding: 15px;
+            border-radius: 5px;
+            border: 3px dashed var(--accent);
+            gap: 12px;
+        }
+
+        .calendar-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(1.5em, 4vw, 2.2em);
+            color: var(--primary);
+            flex: 1;
+            text-align: center;
+        }
+
+        .nav-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1.4em;
+            flex-shrink: 0;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .cal-header {
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+            padding: 10px 6px;
+            background: #fef9fb;
+            border-radius: 3px;
+            font-size: 1em;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid #fce4ec;
+            border-radius: 3px;
+            padding: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+            min-height: 60px;
+            transition: 0.2s;
+        }
+
+        .cal-day:active {
+            transform: scale(0.95);
+        }
+
+        .cal-day.today {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .cal-day.today .day-num {
+            color: white;
+        }
+
+        .cal-day.other-month {
+            opacity: 0.3;
+        }
+
+        .day-num {
+            font-size: 1.3em;
+            font-weight: 600;
+            font-family: 'Caveat', cursive;
+        }
+
+        .exam-label {
+            font-size: 0.8em;
+            color: var(--primary);
+            text-align: center;
+            margin-top: 3px;
+            font-weight: 600;
+            line-height: 1.2;
+            word-break: break-word;
+pointer-events: none;
+        }
+
+        .cal-day.today .exam-label {
+            color: white;
+        }
+
+        .todo-dot {
+display: flex;    
+width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 4px;
+pointer-events: none;
+}
+
+.habit-dots {
+    display: flex;
+    gap: 3px;
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 90%;
+pointer-events: none;
+}       
+        .day-schedule {
+            display: grid;
+            gap: 10px;
+        }
+
+        .hour-block {
+            background: white;
+            border: 2px solid #fce4ec;
+            border-radius: 5px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hour-label {
+            font-family: 'Caveat', cursive;
+            font-size: 1.4em;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .hour-input {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Patrick Hand', cursive;
+            width: 100%;
+            font-size: 1.05em;
+        }
+
+        .stundenplan-grid {
+            display: grid;
+            grid-template-columns: 90px repeat(5, 1fr);
+            gap: 6px;
+            overflow-x: auto;
+        }
+
+        .sp-header {
+            font-family: 'Caveat', cursive;
+            font-size: 1.05em;
+            color: var(--primary);
+            text-align: center;
+            padding: 10px 6px;
+            background: #fef9fb;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .sp-cell {
+            border: 2px solid #e0e0e0;
+            padding: 8px;
+            border-radius: 3px;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95em;
+        }
+
+        .sp-time {
+            font-weight: 600;
+            color: var(--schule);
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+
+        .sp-input {
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: 'Patrick Hand', cursive;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 5px;
+            border: 4px solid var(--primary);
+            max-width: 650px;
+            width: 100%;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 12px;
+        }
+
+        .modal-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(1.8em, 5vw, 2.8em);
+            color: var(--primary);
+            flex: 1;
+        }
+
+        .close-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1.4em;
+            flex-shrink: 0;
+        }
+
+        .habit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent);
+            margin-bottom: 12px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .habit-name {
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .habit-days {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .habit-day {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .habit-day.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .pomodoro {
+            text-align: center;
+            padding: 25px;
+            background: #fef9fb;
+            border-radius: 5px;
+            border: 3px solid var(--accent);
+        }
+
+        .timer-display {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(3em, 10vw, 4.5em);
+            color: var(--primary);
+            margin: 20px 0;
+ transition: 0.2s;
+        }
+.timer-display.flash {
+    transform: scale(1.1);
+    color: var(--primary);
+}
+        .timer-settings {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .timer-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .timer-input-label {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .timer-input {
+            border: 2px solid var(--accent);
+            padding: 8px 12px;
+            border-radius: 3px;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.1em;
+            width: 100px;
+            text-align: center;
+        }
+
+        .timer-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.1em;
+        }
+
+        .notes-container {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+.notes-carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px 10px;
+    scroll-snap-type: x mandatory;
+}
+
+.note-card {
+    width: 300px;
+    min-width: 300px;
+    height: 350px;
+    background: linear-gradient(to bottom, #fffef8 0%, #fffbf0 100%);
+    border: 3px solid #f1d07a;
+    border-radius: 10px;
+    padding: 20px;
+    scroll-snap-align: center;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+    font-family: "Patrick Hand", cursive;
+}
+
+.note-card::before {
+    content: "";
+    width: 100%;
+    height: 30px;
+    background: repeating-linear-gradient(
+        to right,
+        transparent 0 18px,
+        #d4b46e 18px 22px
+    );
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    border-radius: 10px 10px 0 0;
+}
+
+.note-card .note-date {
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    font-size: 1.1em;
+    color: #a5853b;
+    font-family: 'Caveat', cursive;
+    font-weight: 600;
+}
+
+.note-text {
+    width: 100%;
+    height: calc(100% - 80px);
+    border: none;
+    background: transparent;
+    resize: none;
+    font-size: 1.1em;
+    outline: none;
+    margin-top: 60px;
+    font-family: 'Patrick Hand', cursive;
+    color: #333;
+    line-height: 1.5;
+}
+
+.note-card .note-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2em;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.add-note-btn {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    background: var(--primary);
+    border: 3px solid white;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
+    padding-bottom: 8px;  
+}
+
+.add-note-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 6px 6px 16px rgba(0,0,0,0.3);
+}
+
+.add-note-btn:active {
+    transform: scale(0.95);
+}
+        .note-paper {
+            background: linear-gradient(to bottom, #fffef8 0%, #fffbf0 100%);
+            padding: 25px;
+            position: relative;
+            clip-path: polygon(
+                2% 0%, 5% 1%, 8% 0%, 12% 2%, 18% 1%, 25% 0%, 32% 1%, 40% 0%, 
+                48% 1%, 55% 0%, 63% 2%, 70% 1%, 78% 0%, 85% 1%, 92% 0%, 97% 2%, 
+                100% 5%, 100% 95%, 98% 97%, 95% 99%, 92% 97%, 88% 100%, 85% 98%, 
+                80% 100%, 75% 97%, 70% 99%, 65% 97%, 60% 100%, 55% 98%, 50% 99%, 
+                45% 97%, 40% 100%, 35% 98%, 30% 99%, 25% 97%, 20% 100%, 15% 98%, 
+                10% 99%, 5% 97%, 2% 100%, 0% 95%, 0% 5%
+            );
+            box-shadow: 4px 6px 15px rgba(0,0,0,0.25), inset 0 0 20px rgba(212,134,156,0.1);
+            border: none;
+            margin-bottom: 20px;
+            transform: rotate(-0.5deg);
+        }
+
+        .note-paper:nth-child(even) {
+            transform: rotate(0.5deg);
+        }
+
+        .note-date {
+            font-family: 'Caveat', cursive;
+            font-size: 1.6em;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-weight: 700;
+            text-decoration: underline wavy var(--accent);
+        }
+
+        .note-input {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            background: transparent;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.05em;
+            resize: vertical;
+            outline: none;
+            line-height: 1.6;
+        }
+
+        .note-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: #fef9fb;
+            border: 2px solid var(--accent);
+            border-radius: 5px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2.2em, 6vw, 3.2em);
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 1.05em;
+            margin-top: 5px;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 12px;
+        }
+
+        .theme-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: 0.3s;
+        }
+
+        .theme-option.active {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+
+       .exam-item, .grade-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.exam-date-input, .exam-subject-input, .grade-subject, .grade-value, .grade-type {
+    border: 2px solid var(--accent);
+    padding: 10px;
+    border-radius: 5px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.05em;
+    background: white;
+    transition: 0.2s;
+}
+        .exam-date-input {
+            flex: 0 0 auto;
+            min-width: 140px;
+        }
+
+        .exam-date-input:focus, .exam-subject-input:focus, .grade-subject:focus, .grade-value:focus, .grade-type:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(212, 134, 156, 0.1);
+}
+.exam-item, .grade-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 15px;
+    background: #fef9fb;
+    border-radius: 5px;
+    border-left: 4px solid var(--accent);
+}
+
+        .grade-value {
+            width: 80px;
+        }
+
+        .grade-type {
+            width: 150px;
+        }
+
+        .grade-average {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        .grade-average-value {
+            font-family: 'Caveat', cursive;
+            font-size: 3em;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .color-input {
+            width: 55px;
+            height: 45px;
+            border: 2px solid var(--accent);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+    body {
+        font-size: 16px;
+        padding: 5px;
+    }
+
+    /* Sidebar auf Mobile schmal */
+    .sidebar {
+        width: 60px;
+        padding: 10px 0;
+ transform: translateX(-100%);
+transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* <-- Smooth ease */
+    }
+    
+    .sidebar-logo {
+        font-size: 1.2em;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        margin-bottom: 20px;
+    }
+    
+    .sidebar-btn {
+        padding: 12px 5px;
+        justify-content: center;
+        font-size: 1.8em;
+    }
+    
+    .sidebar-btn span:last-child {
+        display: none; /* Text verstecken */
+    }
+    
+    .content-wrapper {
+        margin-left: 60px;
+        padding: 5px;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    /* Datum/Uhrzeit Banner */
+    .datetime-widget {
+        padding: 15px 10px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .datetime-widget > div {
+        flex-direction: column !important;
+        gap: 10px !important;
+        text-align: center !important;
+    }
+
+    .datetime-widget > div > div {
+        text-align: center !important;
+        flex: 1 !important;
+    }
+
+    .mood-selector {
+        justify-content: center;
+        font-size: 1.5em;
+        gap: 10px;
+    }
+
+    .datetime-date {
+        font-size: 2.2em !important;
+    }
+
+    .datetime-time {
+        font-size: 2.8em !important;
+    }
+
+    .datetime-day {
+        font-size: 1.8em !important;
+    }
+
+    /* Überschriften */
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .section-title {
+        font-size: 2em;
+        margin-bottom: 12px;
+    }
+
+    /* Widgets Grid */
+    .widgets {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Buttons */
+    .category-btns {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .cat-btn {
+        padding: 12px 8px;
+        font-size: 0.95em;
+    }
+
+    /* Todo Items */
+    .todo-item {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .todo-input {
+        font-size: 1em;
+    }
+
+    .todo-controls {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .todo-deadline, .priority-select {
+        width: 100%;
+        min-width: unset;
+    }
+
+    /* Kalender */
+    .calendar-nav {
+        padding: 10px;
+        flex-wrap: wrap;
+    }
+
+    .calendar-title {
+        font-size: 1.5em;
+        width: 100%;
+        order: -1;
+        margin-bottom: 10px;
+    }
+
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+
+    .cal-header {
+        font-size: 0.85em;
+        padding: 6px 2px;
+    }
+
+    .cal-day {
+        min-height: 50px;
+        padding: 4px;
+    }
+
+    .day-num {
+        font-size: 1.1em;
+    }
+
+    .exam-label {
+        font-size: 0.7em;
+    }
+
+    /* Stundenplan */
+    .stundenplan-grid {
+        grid-template-columns: 70px repeat(5, 1fr);
+        gap: 4px;
+        font-size: 0.85em;
+    }
+
+    .sp-header {
+        font-size: 0.9em;
+        padding: 8px 4px;
+    }
+
+    .sp-cell {
+        padding: 6px 4px;
+        font-size: 0.85em;
+        min-height: 45px;
+    }
+
+    .sp-time {
+        font-size: 0.8em;
+    }
+
+    .sp-input {
+        font-size: 0.9em;
+    }
+
+    /* Klausuren & Noten */
+    .exam-item, .grade-item {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .exam-date-input, .exam-subject-input,
+    .grade-subject, .grade-value, .grade-type {
+        width: 100%;
+        min-width: unset;
+    }
+
+    /* Gewohnheiten */
+    .habit-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+.habit-colors {
+    --habit-1: #ff6b9d;
+    --habit-2: #c44569;
+    --habit-3: #ffa502;
+    --habit-4: #ff6348;
+    --habit-5: #1e90ff;
+    --habit-6: #2ed573;
+    --habit-7: #a29bfe;
+    --habit-8: #fd79a8;
+    --habit-9: #fdcb6e;
+    --habit-10: #6c5ce7;
+}
+    .habit-name {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .habit-days {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Pomodoro Timer */
+    .timer-display {
+        font-size: 3em;
+    }
+
+    .timer-settings {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .timer-input {
+        width: 100%;
+    }
+
+    .timer-btns {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .timer-btn {
+        width: 100%;
+        padding: 12px;
+    }
+.pretty-btn {
+    background: var(--primary);
+    border: 3px solid var(--accent);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1em;
+    transition: 0.3s;
+    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
+    width: 100%;
+}
+
+.pretty-btn:hover {
+    background: var(--accent);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 rgba(212, 134, 156, 0.4);
+}
+
+.pretty-btn:active {
+    transform: translateY(0);
+    box-shadow: 2px 2px 0 rgba(212, 134, 156, 0.3);
+}
+
+    /* Notizen Carousel */
+    .notes-carousel {
+        gap: 15px;
+        padding: 10px 0;
+    }
+
+    /* Modal */
+    .modal-content {
+        padding: 15px;
+        max-height: calc(100vh - 20px);
+    }
+
+    .modal-title {
+        font-size: 1.8em;
+    }
+
+    /* Settings */
+    .theme-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .theme-option {
+        width: 100%;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px;
+    }
+
+    .stat-value {
+        font-size: 2em;
+    }
+
+    /* Tabs */
+    .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tab-btn {
+        padding: 8px 15px;
+        font-size: 1em;
+    }
+
+    /* Buttons */
+    .pretty-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1em;
+    }
+
+    .delete-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1em;
+    }
+
+    /* Filter Dropdown */
+    .filter-btn {
+        font-size: 1em;
+        padding: 12px;
+    }
+
+    .filter-option {
+        font-size: 1em;
+        padding: 12px;
+    }
+}
+/* Hamburger Menu Button */
+.hamburger {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 999;
+    background: var(--primary);
+    border: none;
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+/* Overlay für Mobile wenn Sidebar offen */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* Desktop: Sidebar auf Hover */
+@media (min-width: 769px) {
+    .sidebar {
+        width: 70px;
+        transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        will-change: width;
+        overflow: hidden; /* Verhindert Jumping */
+    }
+
+    .sidebar:hover {
+        width: 250px;
+    }
+
+    .sidebar-logo {
+        font-size: 1.5em;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        transition: opacity 0.3s ease;
+        opacity: 0;
+        height: 60px; /* Feste Höhe! */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar:hover .sidebar-logo {
+        writing-mode: horizontal-tb;
+        font-size: 2em;
+        opacity: 1;
+    }
+
+    .sidebar-btn {
+        padding: 15px 0; /* Kein horizontales Padding! */
+        transition: background 0.3s ease;
+        position: relative;
+        height: 50px; /* Feste Höhe verhindert Springen! */
+        display: flex;
+        align-items: center;
+margin-bottom: 8px; /* Mehr Abstand zwischen den Buttons! */
+    }
+
+    .sidebar-btn span:first-child {
+        font-size: 1.3em;
+        position: absolute;
+        left: 23px; /* Zentriert bei 70px breite */
+        transform: none; /* Kein Transform! */
+        width: 24px; /* Feste Breite */
+        text-align: center;
+    }
+
+    .sidebar-btn span:last-child {
+        opacity: 0;
+        position: absolute;
+        left: 70px; /* Fixed position */
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+        pointer-events: none; /* Verhindert Click-Probleme */
+    }
+
+    .sidebar:hover .sidebar-btn span:last-child {
+        opacity: 1;
+    }
+
+    .content-wrapper {
+        margin-left: 70px;
+        transition: margin-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+.mood-left {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.datetime-center {
+    flex: 1;
+    text-align: center;
+}
+
+.quote-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 10px;
+}
+
+.daily-quote {
+    font-size: 2.1em;
+    opacity: 0.85;
+    font-family: 'Caveat', cursive;
+    color: white;
+}
+
+}    </style>
+</head>
+
+<body>
+<!-- HAMBURGER MENU -->
+    <button class="hamburger" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">Ayas Planer</div>
+        <nav class="sidebar-nav">
+            <button class="sidebar-btn active" onclick="switchTab('todo')">
+                <span>✎</span> <span>Aufgaben</span>
+            </button>
+            <button class="sidebar-btn" onclick="switchTab('calendar')">
+                <span> 📅 </span> <span>Kalender</span>
+            </button>
+            <button class="sidebar-btn" onclick="switchTab('school')">
+                <span> 📚 </span> <span>Schule</span>
+            </button>
+            <button class="sidebar-btn" onclick="switchTab('habits')">
+                <span> ✨ </span> <span>Gewohnheiten</span>
+            </button>
+            <button class="sidebar-btn" onclick="switchTab('pomodoro')">
+                <span> ⏱️ </span> <span>Timer</span>
+            </button>
+            <button class="sidebar-btn" onclick="switchTab('notes')">
+                <span> 📝 </span> <span>Notizen</span>
+            </button>
+                        <button class="sidebar-btn" onclick="switchTab('settings')">
+                <span> ⚙️ </span> <span>Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <div class="content-wrapper">
+    
+           
+      <div class="datetime-widget">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+
+    <!-- LINKS: Emojis -->
+    <div class="mood-left">
+        <div class="mood-selector" id="moodSelector"></div>
+    </div>
+
+    <!-- MITTE: Datum & Uhrzeit -->
+    <div class="datetime-center">
+        <div class="datetime-day" id="currentDay"></div>
+        <div class="datetime-date" id="currentDate"></div>
+        <div class="datetime-time" id="currentTime"></div>
+    </div>
+
+    <!-- RECHTS: Quote -->
+    <div class="quote-right">
+        <div class="daily-quote" id="dailyQuote"></div>
+    </div>
+
+</div>
+
+
+    </div>
+</div>
+<div class="container">
+
+       
+        <!-- AUFGABEN -->
+        <div id="todo" class="tab-content active">
+            <h2 class="section-title">Meine Aufgaben</h2>
+            
+            <div class="progress">
+                <div class="progress-fill" id="todoProgress" style="width: 0%">0%</div>
+            </div>
+
+            <div class="filter-dropdown">
+                <button class="filter-btn" onclick="toggleFilter()">
+                    <span id="filterText">Alle Aufgaben</span>
+                    <span>▼</span>
+                </button>
+                <div class="filter-menu" id="filterMenu">
+                    <div class="filter-option" onclick="filterTodos('alle')">Alle Aufgaben</div>
+                    <div class="filter-option" onclick="filterTodos('schule')">📚 Schule</div>
+                    <div class="filter-option" onclick="filterTodos('freizeit')">🌸 Freizeit</div>
+                    <div class="filter-option" onclick="filterTodos('haushalt')">🏠 Haushalt</div>
+                    <div class="filter-option" onclick="filterTodos('sonstiges')">✨ Sonstiges</div>
+                    <div class="filter-option" onclick="filterTodos('high')">⭐⭐⭐ Hohe Priorität</div>
+                    <div class="filter-option" onclick="filterTodos('medium')">⭐⭐ Mittlere Priorität</div>
+                    <div class="filter-option" onclick="filterTodos('low')">⭐ Niedrige Priorität</div>
+                </div>
+            </div>
+
+            <div class="category-btns">
+                <button class="cat-btn" style="border-color: var(--schule); color: var(--schule)" onclick="addTodo('schule')">+ 📚 Schule</button>
+                <button class="cat-btn" style="border-color: var(--freizeit); color: var(--freizeit)" onclick="addTodo('freizeit')">+ 🌸 Freizeit</button>
+                <button class="cat-btn" style="border-color: var(--haushalt); color: var(--haushalt)" onclick="addTodo('haushalt')">+ 🏠 Haushalt</button>
+                <button class="cat-btn" style="border-color: var(--sonstiges); color: var(--sonstiges)" onclick="addTodo('sonstiges')">+ ✨ Sonstiges</button>
+            </div>
+
+            <div class="todo-paper">
+                <div id="todoList"></div>
+            </div>
+        </div>
+
+        <!-- KALENDER -->
+        <div id="calendar" class="tab-content">
+            <h2 class="section-title">Kalender</h2>
+            <!-- Nur Monatsansicht -->
+           
+
+           <div id="dayView" style="display: none;">
+                <div class="calendar-nav">
+                    <button class="nav-btn" onclick="prevDay()">←</button>
+                    <div class="calendar-title" id="dayTitle"></div>
+                    <button class="nav-btn" onclick="nextDay()">→</button>
+                </div>
+                <div class="day-schedule" id="daySchedule"></div>
+            </div>
+
+            <div id="weekView" style="display: none;">
+                <div class="calendar-nav">
+                    <button class="nav-btn" onclick="prevWeek()">←</button>
+                    <div class="calendar-title" id="weekTitle"></div>
+                    <button class="nav-btn" onclick="nextWeek()">→</button>
+                </div>
+                <div id="weekGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;"></div>
+            </div>
+
+            <div id="monthView" style="display: block;">
+                <div class="calendar-nav">
+                    <button class="nav-btn" onclick="prevMonth()">←</button>
+                    <div class="calendar-title" id="monthTitle"></div>
+                    <button class="nav-btn" onclick="nextMonth()">→</button>
+                </div>
+                <div class="calendar-grid" id="monthGrid"></div>
+            </div>
+        </div>
+<!-- SCHULE -->
+        <div id="school" class="tab-content">
+            <h2 class="section-title">Schule</h2>
+            
+            <!-- Sub-Tabs für Schule -->
+            <div class="tabs" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="tab-btn active" onclick="switchSchoolView('timetable', this)">📚 Stundenplan</button>
+                <button class="tab-btn" onclick="switchSchoolView('exams', this)">📝 Klausurplan</button>
+                <button class="tab-btn" onclick="switchSchoolView('grades', this)">📊 Noten</button>
+            </div>
+
+            <!-- STUNDENPLAN -->
+            <div id="timetable" class="school-tab-content active">
+                <div class="stundenplan-grid" id="stundenplan"></div>
+            </div>
+
+            <!-- KLAUSURPLAN -->
+            <div id="exams" class="school-tab-content">
+                <div id="examList"></div>
+<button onclick="addExam()" style="
+    background: var(--primary);
+    border: 3px solid var(--accent);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1em;
+    transition: 0.3s;
+    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
+    width: 100%;
+    margin-top: 10px;
+">+ Neue Klausur</button>            </div>
+
+            <!-- NOTEN -->
+            <div id="grades" class="school-tab-content">
+                <div id="gradesList"></div>
+                <button onclick="addGrade()" style="
+    background: var(--primary);
+    border: 3px solid var(--accent);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1em;
+    transition: 0.3s;
+    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
+    width: 100%;
+    margin-top: 10px;
+">+ Note hinzufügen</button>
+                <div class="grade-average" id="gradeAverage">
+                    <div>Gesamtdurchschnitt</div>
+                    <div class="grade-average-value" id="avgValue">0.0</div>
+                    <div style="font-size: 0.9em; opacity: 0.9;" id="avgDetail">Noch keine Noten</div>
+                </div>
+            </div>
+        </div>
+        <!-- GEWOHNHEITEN -->
+        <div id="habits" class="tab-content">
+            <h2 class="section-title">Gewohnheiten</h2>
+            <div id="habitsList"></div>
+            <button onclick="addHabit()" style="
+    background: var(--primary);
+    border: 3px solid var(--accent);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1em;
+    transition: 0.3s;
+    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
+    width: 100%;
+    margin-top: 15px;
+">+ Neue Gewohnheit</button>
+
+        </div>
+
+       <!-- POMODORO -->
+<div id="pomodoro" class="tab-content">
+    <h2 class="section-title">Pomodoro Timer</h2>
+    <div class="pomodoro">
+        <div class="timer-display" id="timerDisplay">00:00</div>
+        <div class="timer-btns">
+            <button class="timer-btn" onclick="startTimer()">Start</button>
+            <button class="timer-btn" onclick="pauseTimer()">Pause</button>
+            <button class="timer-btn" onclick="resetTimer()">Reset</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <input type="number" id="manualMinutes" placeholder="Minuten" style="width: 80px; padding: 5px;">
+            <button class="timer-btn" onclick="setManualTime()">Setzen</button>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.9em; color: #666;">
+            Stay on track, no looking back.
+        </div>
+    </div>
+</div>
+        <!-- NOTIZEN -->
+      
+<div id="notes" class="tab-content">
+  <h2 class="section-title">Notizen</h2>
+
+  <div id="notesCarousel" class="notes-carousel"></div>
+</div>
+
+
+
+        <!-- EINSTELLUNGEN -->
+        <div id="settings" class="tab-content">
+            <h2 class="section-title">Einstellungen</h2>
+            
+            <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin-bottom: 10px;">Themes</h3>
+            <div class="theme-grid">
+                <div class="theme-option active" style="background: linear-gradient(135deg, #d4869c, #f4b5c5)" onclick="setTheme('pink')"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #9b7fb5, #d4a5d4)" onclick="setTheme('purple')"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #7eb5d6, #a5d4e8)" onclick="setTheme('blue')"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #b8d4b8, #d4e8d4)" onclick="setTheme('green')"></div>
+                <div class="theme-option" style="background: linear-gradient(135deg, #e8c490, #f4d4a5)" onclick="setTheme('peach')"></div>
+            </div>
+
+            <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin: 20px 0 10px;">Kategorie-Farben</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="min-width: 100px;">📚 Schule:</span>
+                    <input type="color" value="#7eb5d6" onchange="setCategoryColor('schule', this.value)" style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="min-width: 100px;">🌸 Freizeit:</span>
+                    <input type="color" value="#f4b5c5" onchange="setCategoryColor('freizeit', this.value)" style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="min-width: 100px;">🏠 Haushalt:</span>
+                    <input type="color" value="#b8d4b8" onchange="setCategoryColor('haushalt', this.value)" style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="min-width: 100px;">✨ Sonstiges:</span>
+                    <input type="color" value="#e8c490" onchange="setCategoryColor('sonstiges', this.value)" style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                </div>
+            </div>
+
+            <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin: 20px 0 10px;">Daten</h3>
+            <button class="tab-btn" onclick="exportData()">📥 Daten exportieren</button>
+            <button class="tab-btn" onclick="clearAllData()" style="background: #ff6b6b; color: white; margin-left: 10px;">🗑️ Alle Daten löschen</button>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal" id="dayModal" onclick="if(event.target.id==='dayModal') closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle"></div>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+
+            <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin-bottom: 10px;">Aufgaben</h3>
+            <div class="category-btns">
+                <button class="cat-btn" style="border-color: var(--schule); color: var(--schule)" onclick="addModalTodo('schule')">+ 📚</button>
+                <button class="cat-btn" style="border-color: var(--freizeit); color: var(--freizeit)" onclick="addModalTodo('freizeit')">+ 🌸</button>
+                <button class="cat-btn" style="border-color: var(--haushalt); color: var(--haushalt)" onclick="addModalTodo('haushalt')">+ 🏠</button>
+                <button class="cat-btn" style="border-color: var(--sonstiges); color: var(--sonstiges)" onclick="addModalTodo('sonstiges')">+ ✨</button>
+            </div>
+            <div class="todo-paper">
+                <div id="modalTodoList"></div>
+            </div>
+
+            <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin: 20px 0 10px;" id="modalStundenplanTitle">Stundenplan</h3>
+            <div id="modalStundenplan"></div>
+
+           <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin: 20px 0 10px;">Gewohnheiten</h3>
+<div id="modalHabits"></div> <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin: 20px 0 10px;">Nächste Klausuren</h3>
+            <div id="modalExams"></div>
+        </div>
+    </div>
+
+    <script>
+// ==== DATUM • UHRZEIT • WOCHENTAG (für dein Banner) ====
+
+function updateDateTime() {
+    const now = new Date();
+
+    const days = [
+         "Sonntag",
+"Montag", "Dienstag",
+        "Mittwoch", "Donnerstag", "Freitag", "Samstag", 
+    ];
+
+    const months = [
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember"
+    ];
+
+    const dayName = days[now.getDay()];
+    const date = now.getDate() + ". " + months[now.getMonth()] + " " + now.getFullYear();
+
+    const time = now.toLocaleTimeString("de-DE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+    document.getElementById("currentDay").textContent = dayName;
+    document.getElementById("currentDate").textContent = date;
+    document.getElementById("currentTime").textContent = time;
+}
+
+// Jede Sekunde aktualisieren
+setInterval(updateDateTime, 1000);
+
+// Beim Laden starten
+updateDateTime();
+
+        const data = {
+            todos: {},
+            daySchedule: {},
+            stundenplan: { Montag: {}, Dienstag: {}, Mittwoch: {}, Donnerstag: {}, Freitag: {} },
+            exams: [],
+            grades: [],
+            habits: [],
+            notes:[],
+            mood: {},
+            streak: 0,
+            theme: 'pink',
+            categoryColors: { schule: '#7eb5d6', freizeit: '#f4b5c5', haushalt: '#b8d4b8', sonstiges: '#e8c490' }
+        };
+
+        let currentDate = new Date();
+        let currentCalView = 'day';
+        let currentFilter = 'alle';
+        let selectedDate = null;
+        let timerInterval = null;
+        let timerSeconds = 1500;
+        let timerRunning = false;
+
+        const stundenTimes = [
+            { label: '1. Stunde', time: '8:00-8:45' },
+            { label: '2. Stunde', time: '8:45-9:30' },
+            { label: '3. Stunde', time: '9:45-10:30' },
+            { label: '4. Stunde', time: '10:30-11:15' },
+            { label: '5. Stunde', time: '11:35-12:20' },
+            { label: '6. Stunde', time: '12:20-13:05' },
+            { label: '7. Stunde', time: '13:20-14:05', fixed: 'Freistunde' },
+            { label: '8. Stunde', time: '14:05-14:50' }
+        ];
+
+        function loadData() {
+            const saved = localStorage.getItem('ayasPlanner');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.assign(data, parsed);
+                applyTheme(data.theme);
+                applyCategoryColors();
+            }
+// Falls Datenfelder noch nicht existieren → erstellen
+if (!data.notes) data.notes = [];
+if (!data.todos) data.todos = [];
+if (!data.mood) data.mood = {};
+if (!data.grades) data.grades = [];
+if (!data.exams) data.exams = [];
+if (!data.habits) data.habits = [];
+if (!data.categoryColors) data.categoryColors = {};
+
+if (!data.notes) data.notes = [];
+        }
+
+        let saveTimeout;
+
+function saveData() {
+    clearTimeout(saveTimeout);
+
+    // speichert 300ms nach der letzten Änderung
+    saveTimeout = setTimeout(() => {
+        localStorage.setItem("ayasPlanner", JSON.stringify(data));
+        console.log("✔ Daten automatisch gespeichert");
+    }, 300);
+}
+
+
+        function getDateKey(date = new Date()) {
+            return date.toISOString().split('T')[0];
+        }
+
+       function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    
+    // Button markieren
+    const btn = Array.from(document.querySelectorAll('.sidebar-btn'))
+        .find(b => b.getAttribute("onclick") === `switchTab('${tabId}')`);
+    if (btn) btn.classList.add("active");
+
+    // Animation
+    const tabElement = document.getElementById(tabId);
+    tabElement.classList.remove("fade-in"); 
+    void tabElement.offsetWidth;
+    tabElement.classList.add("fade-in");
+
+    // BUGFIX: Inhalte rendern, wenn der Tab gewechselt wird
+    if (tabId === 'school') {
+        // HIER MUSS DER AUFRUF HIN
+        renderStundenplan(); // <--- Fügt die Tabelle hinzu!
+        renderExams();
+        renderGrades();
+        switchSchoolView('timetable'); // Stellt sicher, dass Stundenplan-Sub-Tab aktiv ist
+    } 
+    // ... andere Tab-spezifische Render-Aufrufe (z.B. renderTodos, renderMonth)
+}
+// Diese Funktion verwaltet die Unter-Tabs im Bereich "Schule"
+function switchSchoolView(viewId, btnEl = null) {
+    // Alle Unter-Tabs deaktivieren
+    document.querySelectorAll('#school .school-tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('#school .tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Den gewünschten Tab (z.B. timetable) aktivieren
+    const newView = document.getElementById(viewId);
+    if (newView) {
+        newView.classList.add('active');
+        
+        // Sanfte Animation
+        newView.classList.remove("fade-in");
+        void newView.offsetWidth;
+        newView.classList.add("fade-in");
+    }
+
+    // Den geklickten Button markieren
+    if (btnEl) {
+        btnEl.classList.add('active');
+    } else {
+        // Fallback für Initialisierung (wird oben in switchTab benutzt)
+        const match = Array.from(document.querySelectorAll('#school .tab-btn'))
+            .find(b => b.getAttribute('onclick')?.includes(`'${viewId}'`));
+        if (match) match.classList.add('active');
+    }
+}
+function loadDailyQuote() {
+    const quotes = [
+        "Du schaffst das, Aya.",
+        "Stay on track, no looking back.",
+        "Kleine Schritte, große Wirkung.",
+        "Heute wird ein guter Tag.",
+        "Du wirst besser – jeden Tag.",
+        "Fokus vor Perfektion.",
+        "Gib dir Zeit. Du wächst gerade.",
+        "You got this.",
+        "Stolz kommt nach dem Durchziehen.",
+        "Dein Zukunfts-Ich dankt dir.",
+        "Ein Schritt nach dem anderen.",
+        "Bleib dran – du bist auf dem Weg."
+    ];
+
+    const today = new Date().toISOString().split("T")[0];
+    const saved = localStorage.getItem("dailyQuote_" + today);
+
+    if (saved) {
+        document.getElementById("dailyQuote").textContent = saved;
+        return;
+    }
+
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    localStorage.setItem("dailyQuote_" + today, quote);
+    document.getElementById("dailyQuote").textContent = quote;
+}
+
+loadDailyQuote();
+
+        function toggleFilter() {
+            document.getElementById('filterMenu').classList.toggle('active');
+        }
+
+        function filterTodos(filter) {
+            currentFilter = filter;
+            const texts = {
+                alle: 'Alle Aufgaben',
+                schule: '📚 Schule',
+                freizeit: '🌸 Freizeit',
+                haushalt: '🏠 Haushalt',
+                sonstiges: '✨ Sonstiges',
+                high: '⭐⭐⭐ Hohe Priorität',
+                medium: '⭐⭐ Mittlere Priorität',
+                low: '⭐ Niedrige Priorität'
+            };
+            document.getElementById('filterText').textContent = texts[filter];
+            document.getElementById('filterMenu').classList.remove('active');
+            renderTodos();
+        }
+
+        function addTodo(category) {
+            const today = getDateKey();
+            if (!data.todos[today]) data.todos[today] = [];
+            data.todos[today].push({ text: '', done: false, category, priority: 'medium', deadline: '' });
+            saveData();
+            renderTodos();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('#todoList .todo-input');
+                if (inputs.length) inputs[inputs.length - 1].focus();
+            }, 50);
+        }
+
+        function addModalTodo(category) {
+            if (!data.todos[selectedDate]) data.todos[selectedDate] = [];
+            data.todos[selectedDate].push({ text: '', done: false, category, priority: 'medium', deadline: '' });
+            saveData();
+            renderModalTodos();
+            renderMonth();
+        }
+
+        function renderTodos() {
+            const today = getDateKey();
+            const list = document.getElementById('todoList');
+            list.innerHTML = '';
+
+            if (!data.todos[today]) data.todos[today] = [];
+
+            let filtered = data.todos[today];
+            if (currentFilter !== 'alle') {
+                if (['schule', 'freizeit', 'haushalt', 'sonstiges'].includes(currentFilter)) {
+                    filtered = filtered.filter(t => t.category === currentFilter);
+                } else {
+                    filtered = filtered.filter(t => t.priority === currentFilter);
+                }
+            }
+
+            filtered.forEach((todo, i) => {
+                const realIndex = data.todos[today].indexOf(todo);
+                const item = document.createElement('div');
+                item.className = 'todo-item';
+                item.style.borderLeftColor = `var(--${todo.category})`;
+               item.innerHTML = `
+    <div class="todo-row">
+        <input type="checkbox" class="todo-checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${today}', ${realIndex})">
+        <input type="text" class="todo-input" value="${todo.text}" oninput="updateTodo('${today}', ${realIndex}, this.value)" onkeydown="if(event.key==='Enter') focusNext(this)" placeholder="Aufgabe...">
+        <button class="delete-btn" onclick="deleteTodo('${today}', ${realIndex})" style="width: 30px; height: 30px; font-size: 1.1em;">×</button>
+    </div>
+    <div class="todo-controls">
+        <select class="priority-select" onchange="updatePriority('${today}', ${realIndex}, this.value)">
+            <option value="low" ${todo.priority === 'low' ? 'selected' : ''}>⭐</option>
+            <option value="medium" ${todo.priority === 'medium' ? 'selected' : ''}>⭐⭐</option>
+            <option value="high" ${todo.priority === 'high' ? 'selected' : ''}>⭐⭐⭐</option>
+        </select>
+    </div>
+                `;
+                list.appendChild(item);
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Keine Aufgaben</div>';
+            }
+
+            updateProgress();
+            updateNextExam();
+        }
+
+        function renderModalTodos() {
+            const list = document.getElementById('modalTodoList');
+            list.innerHTML = '';
+
+            if (!data.todos[selectedDate]) data.todos[selectedDate] = [];
+
+            data.todos[selectedDate].forEach((todo, i) => {
+                const item = document.createElement('div');
+                item.className = 'todo-item';
+                item.style.borderLeftColor = `var(--${todo.category})`;
+                item.innerHTML = `
+                    <input type="checkbox" class="todo-checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${selectedDate}', ${i}); renderModalTodos()">
+                    <input type="text" class="todo-input" value="${todo.text}" oninput="updateTodo('${selectedDate}', ${i}, this.value)" placeholder="Aufgabe...">
+                    <select class="priority-select" onchange="updatePriority('${selectedDate}', ${i}, this.value)">
+                        <option value="low" ${todo.priority === 'low' ? 'selected' : ''}>⭐</option>
+                        <option value="medium" ${todo.priority === 'medium' ? 'selected' : ''}>⭐⭐</option>
+                        <option value="high" ${todo.priority === 'high' ? 'selected' : ''}>⭐⭐⭐</option>
+                    </select>
+                    
+                    <button class="delete-btn" onclick="deleteTodo('${selectedDate}', ${i}); renderModalTodos(); renderMonth()">×</button>
+                `;
+                list.appendChild(item);
+            });
+
+            if (data.todos[selectedDate].length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Keine Aufgaben</div>';
+            }
+        }
+function getHabitsForDate(date) {
+    const dayIndex = date.getDay(); // 0=Sonntag, 1=Montag, etc.
+    
+    // Umrechnen: JavaScript (0=So) → Array (0=Mo)
+    let adjustedIndex;
+    if (dayIndex === 0) {
+        adjustedIndex = 6; // Sonntag → Index 6
+    } else {
+        adjustedIndex = dayIndex - 1; // Mo=0, Di=1, Mi=2, Do=3, Fr=4, Sa=5
+    }
+    
+    return data.habits.filter(habit => 
+        habit.days && habit.days[adjustedIndex] && habit.name
+    );
+}        function focusNext(input) {
+            const inputs = Array.from(document.querySelectorAll('.todo-input'));
+            const index = inputs.indexOf(input);
+            if (index < inputs.length - 1) inputs[index + 1].focus();
+        }
+
+        function toggleTodo(date, index) {
+            if (data.todos[date] && data.todos[date][index]) {
+                data.todos[date][index].done = !data.todos[date][index].done;
+                saveData();
+                updateProgress();
+                updateStreak();
+            }
+        }
+
+        function updateTodo(date, index, text) {
+            if (data.todos[date] && data.todos[date][index]) {
+                data.todos[date][index].text = text;
+                saveData();
+            }
+        }
+
+        function updatePriority(date, index, priority) {
+            if (data.todos[date] && data.todos[date][index]) {
+                data.todos[date][index].priority = priority;
+                saveData();
+            }
+        }
+
+        function updateDeadline(date, index, deadline) {
+            if (data.todos[date] && data.todos[date][index]) {
+                data.todos[date][index].deadline = deadline;
+                saveData();
+            }
+        }
+
+        function deleteTodo(date, index) {
+            if (data.todos[date]) {
+                data.todos[date].splice(index, 1);
+                saveData();
+                renderTodos();
+                renderMonth();
+            }
+        }
+
+        function updateProgress() {
+            const today = getDateKey();
+            const todos = data.todos[today] || [];
+            const done = todos.filter(t => t.done).length;
+            const total = todos.length;
+            const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+            const fill = document.getElementById('todoProgress');
+            fill.style.width = percent + '%';
+            fill.textContent = percent + '%';
+        }
+
+        function updateStreak() {
+            const today = getDateKey();
+            const todos = data.todos[today] || [];
+            const allDone = todos.length > 0 && todos.every(t => t.done);
+            if (allDone && data.streak === 0) data.streak = 1;
+            else if (allDone) data.streak++;
+            document.getElementById('streak').textContent = data.streak;
+            saveData();
+        }
+
+        function updateNextExam() {
+            const today = new Date();
+            const upcoming = data.exams
+                .filter(e => e.date && e.subject && new Date(e.date) >= today)
+                .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+            
+            if (upcoming) {
+                const date = new Date(upcoming.date);
+                const days = Math.ceil((date - today) / (1000 * 60 * 60 * 24));
+                document.getElementById('nextExam').innerHTML = `${upcoming.subject}<br>in ${days} Tag${days !== 1 ? 'en' : ''}`;
+            } else {
+                document.getElementById('nextExam').textContent = 'Keine';
+            }
+        }
+
+        function setMood(mood) {
+            const today = getDateKey();
+            data.mood[today] = mood;
+            saveData();
+            document.querySelectorAll('.mood-emoji').forEach(e => e.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+function switchCalView(view, btnEl = null) {
+    currentCalView = view;
+
+    // Buttons visuell markieren - wenn btnEl übergeben, nutze ihn, sonst suche den Button
+    const buttons = Array.from(document.querySelectorAll('#calendar .tabs .tab-btn'));
+    buttons.forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    else {
+        // Fallback: finde Button anhand onclick-String
+        const match = buttons.find(b => b.getAttribute('onclick')?.includes(`switchCalView('${view}'`));
+        if (match) match.classList.add('active');
+    }
+
+    // Sichtbarkeit der Views
+    document.getElementById('dayView').style.display = view === 'day' ? 'block' : 'none';
+    document.getElementById('weekView').style.display = view === 'week' ? 'block' : 'none';
+    document.getElementById('monthView').style.display = view === 'month' ? 'block' : 'none';
+
+    // Rendern
+    if (view === 'day') renderDay();
+    if (view === 'week') renderWeek();
+    if (view === 'month') renderMonth();
+}
+        function renderDay() {
+            const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+            const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            document.getElementById('dayTitle').textContent = `${days[currentDate.getDay()]}, ${currentDate.getDate()}. ${months[currentDate.getMonth()]}`;
+
+            const schedule = document.getElementById('daySchedule');
+            schedule.innerHTML = '';
+            const dateKey = getDateKey(currentDate);
+
+            for (let h = 0; h < 24; h++) {
+                const block = document.createElement('div');
+                block.className = 'hour-block';
+                const hour = String(h).padStart(2, '0') + ':00';
+                const value = data.daySchedule[dateKey]?.[hour] || '';
+                block.innerHTML = `
+                    <div class="hour-label">${hour}</div>
+                    <input type="text" class="hour-input" value="${value}" oninput="updateDaySchedule('${dateKey}', '${hour}', this.value)" onkeydown="if(event.key==='Enter') focusNext(this)" placeholder="Frei">
+                `;
+                schedule.appendChild(block);
+            }
+        }
+
+        function updateDaySchedule(date, hour, value) {
+            if (!data.daySchedule[date]) data.daySchedule[date] = {};
+            data.daySchedule[date][hour] = value;
+            saveData();
+        }
+
+      
+        function renderMonth() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            document.getElementById('monthTitle').textContent = `${months[month]} ${year}`;
+
+            const grid = document.getElementById('monthGrid');
+            grid.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+
+            ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].forEach(d => {
+                const h = document.createElement('div');
+                h.className = 'cal-header';
+                h.textContent = d;
+                grid.appendChild(h);
+            });
+
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            for (let i = adjustedFirstDay - 1; i >= 0; i--) {
+                const d = document.createElement('div');
+                d.className = 'cal-day other-month';
+                d.innerHTML = `<div class="day-num">${prevMonthDays - i}</div>`;
+                grid.appendChild(d);
+            }
+
+            const today = new Date();
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(year, month, i);
+                const dateKey = getDateKey(date);
+                const d = document.createElement('div');
+                d.className = 'cal-day';
+                d.onclick = () => openModal(dateKey);
+
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    d.classList.add('today');
+                }
+
+               const habitsForDay = getHabitsForDate(date);
+if (data.todos[dateKey]?.length || habitsForDay.length > 0) {
+    d.classList.add('has-todos');
+}
+
+                const exams = data.exams.filter(e => e.date === dateKey && e.subject);
+let content = `<div class="day-num">${i}</div>`;
+if (exams.length > 0) {
+    exams.forEach(exam => {
+        content += `<div class="exam-label">${exam.subject}</div>`;
+    });
+}
+console.log('Habits für Tag ' + i + ':', habitsForDay.length, habitsForDay);
+// Habit-Dots hinzufügen
+if (habitsForDay.length > 0) {
+    content += '<div class="habit-dots">';
+    habitsForDay.forEach(habit => {
+        const habitColors = ['#ff6b9d', '#c44569', '#ffa502', '#ff6348', '#1e90ff', '#2ed573', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7'];
+        const habitIndex = data.habits.indexOf(habit);
+        const color = habitColors[habitIndex % habitColors.length];
+        content += `<div class="todo-dot" style="background: ${color};"></div>`;
+    });
+    content += '</div>';
+}
+                                d.innerHTML = content;
+                grid.appendChild(d);
+            }
+
+           // Keine Tage des nächsten Monats anzeigen
+        }
+
+       // Im Code-Ausschnitt, der mit 'function openModal(dateKey)' beginnt:
+
+function openModal(dateKey) {
+    selectedDate = dateKey;
+    
+    // Datum parsen
+    const parts = dateKey.split('-');
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1;
+    const day = parseInt(parts[2]);
+    const date = new Date(year, month, day);
+    
+    // BUGFIX: +1 Tag hinzufügen weil alles um einen Tag verschoben ist
+    date.setDate(date.getDate() + 1);
+
+    const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    
+    const dayName = days[date.getDay()];
+
+    document.getElementById('modalTitle').textContent = `${dayName}, ${date.getDate()}. ${months[date.getMonth()]}`;
+    
+    renderModalTodos();
+    renderModalStundenplan(dayName);
+    renderModalExams();
+    renderModalHabits();
+    document.getElementById('dayModal').classList.add('active');
+}
+function renderModalStundenplan(dayName) {
+            const container = document.getElementById('modalStundenplan');
+            
+            if (dayName === 'Samstag' || dayName === 'Sonntag') {
+                document.getElementById('modalStundenplanTitle').textContent = 'Schule';
+                container.innerHTML = '<div style="text-align: center; color: var(--schule); padding: 20px; font-size: 1.2em;">🎉 Heute ist keine Schule!</div>';
+                return;
+            }
+
+            document.getElementById('modalStundenplanTitle').textContent = `Stundenplan ${dayName}`;
+            container.innerHTML = '';
+
+            stundenTimes.forEach((s, i) => {
+                const key = `${i + 1}`;
+                const value = s.fixed || data.stundenplan[dayName]?.[key] || '';
+                
+                if (value) {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display: flex; gap: 10px; padding: 8px; background: #f0f8ff; border-left: 3px solid var(--schule); margin-bottom: 5px; border-radius: 3px;';
+                    row.innerHTML = `
+                        <div style="font-weight: 600; color: var(--schule); min-width: 100px;">${s.label}<br><span style="font-size: 0.85em; font-weight: normal;">${s.time}</span></div>
+                        <div>${value}</div>
+                    `;
+                    container.appendChild(row);
+                }
+            });
+
+            if (container.innerHTML === '') {
+                container.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Noch kein Stundenplan</div>';
+            }
+        }
+
+     function renderModalExams() {
+    const container = document.getElementById('modalExams');
+    
+    // Datum parsen
+    const parts = selectedDate.split('-');
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1;
+    const day = parseInt(parts[2]);
+    const today = new Date(year, month, day);
+    
+    // BUGFIX: +1 Tag hinzufügen
+    today.setDate(today.getDate() + 1);
+    
+    const upcoming = data.exams
+        .filter(e => {
+            if (!e.date || !e.subject) return false;
+            const examParts = e.date.split('-');
+            const examDate = new Date(parseInt(examParts[0]), parseInt(examParts[1]) - 1, parseInt(examParts[2]));
+            return examDate >= today;
+        })
+        .sort((a, b) => {
+            const aParts = a.date.split('-');
+            const bParts = b.date.split('-');
+            const aDate = new Date(parseInt(aParts[0]), parseInt(aParts[1]) - 1, parseInt(aParts[2]));
+            const bDate = new Date(parseInt(bParts[0]), parseInt(bParts[1]) - 1, parseInt(bParts[2]));
+            return aDate - bDate;
+        })
+        .slice(0, 3);
+
+    if (!upcoming.length) {
+        container.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Keine anstehenden Klausuren</div>';
+        return;
+    }
+
+    container.innerHTML = '';
+    upcoming.forEach(e => {
+        const examParts = e.date.split('-');
+        const d = new Date(parseInt(examParts[0]), parseInt(examParts[1]) - 1, parseInt(examParts[2]));
+        const div = document.createElement('div');
+        div.style.cssText = 'padding: 12px; background: white; border-left: 4px solid var(--accent); margin-bottom: 10px; border-radius: 3px;';
+        div.innerHTML = `
+            <div style="font-weight: 600; color: var(--primary);">${d.toLocaleDateString('de-DE', {day: 'numeric', month: 'long'})}</div>
+            <div style="color: #666; margin-top: 5px;">${e.subject}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+function renderModalHabits() {
+    const container = document.getElementById('modalHabits');
+    container.innerHTML = '';
+
+    // Datum parsen
+    const parts = selectedDate.split('-');
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1;
+    const day = parseInt(parts[2]);
+    const date = new Date(year, month, day);
+    
+    // BUGFIX: +1 Tag hinzufügen
+    date.setDate(date.getDate() + 1);
+    
+    const habitsForDay = getHabitsForDate(date);
+
+    if (habitsForDay.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Keine Gewohnheiten für diesen Tag</div>';
+        return;
+    }
+
+    habitsForDay.forEach(habit => {
+        const item = document.createElement('div');
+        item.style.cssText = 'padding: 12px; background: white; border-left: 4px solid var(--accent); margin-bottom: 10px; border-radius: 3px;';
+        item.innerHTML = `
+            <div style="font-weight: 600; color: var(--primary);">✨ ${habit.name}</div>
+        `;
+        container.appendChild(item);
+    });
+}
+function closeModal() {
+    document.getElementById('dayModal').classList.remove('active');
+    renderMonth();
+    // renderWeek(); // <-- Diese Zeile auskommentieren oder löschen
+    if (selectedDate === getDateKey()) renderTodos();
+}
+        function renderStundenplan() {
+            const grid = document.getElementById('stundenplan');
+            grid.innerHTML = '';
+
+            grid.innerHTML += '<div class="sp-header"></div>';
+            ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'].forEach(day => {
+                grid.innerHTML += `<div class="sp-header">${day}</div>`;
+            });
+
+            stundenTimes.forEach((s, i) => {
+                const key = `${i + 1}`;
+                grid.innerHTML += `<div class="sp-cell sp-time">${s.label}<br>${s.time}</div>`;
+                
+                ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'].forEach(day => {
+                    const value = s.fixed || data.stundenplan[day]?.[key] || '';
+                    const cell = document.createElement('div');
+                    cell.className = 'sp-cell';
+                    
+                    if (s.fixed) {
+                        cell.textContent = s.fixed;
+                        cell.style.background = '#f0f8ff';
+                    } else {
+                        cell.innerHTML = `<input type="text" class="sp-input" value="${value}" 
+oninput="updateStundenplan('${day}', '${key}', this.value)" placeholder="-">`;
+                    }
+                    grid.appendChild(cell);
+                });
+            });
+        }
+
+        function updateStundenplan(day, key, value) {
+            if (!data.stundenplan[day]) data.stundenplan[day] = {};
+            data.stundenplan[day][key] = value;
+            saveData();
+        }
+
+        function renderExams() {
+            const container = document.getElementById('examList');
+            container.innerHTML = '';
+            
+            const sortedExams = [...data.exams].sort((a, b) => {
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+                return new Date(a.date) - new Date(b.date);
+            });
+            
+            sortedExams.forEach((exam) => {
+                const originalIndex = data.exams.indexOf(exam);
+                const item = document.createElement('div');
+                item.className = 'exam-item';
+                item.innerHTML = `
+                    <input type="date" class="exam-date-input" value="${exam.date}" oninput="updateExam(${originalIndex}, 'date', this.value)">
+                    <input type="text" class="exam-subject-input" value="${exam.subject}" oninput="updateExam(${originalIndex}, 'subject', this.value)" placeholder="Fach / Klausur...">
+                    <button class="delete-btn" onclick="deleteExam(${originalIndex})">×</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function addExam() {
+            data.exams.push({ date: '', subject: '' });
+            saveData();
+            renderExams();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('#examList .exam-subject-input');
+                if (inputs.length) inputs[inputs.length - 1].focus();
+            }, 50);
+        }
+function updateExam(index, field, value) {
+    if (data.exams[index]) {
+        data.exams[index][field] = value;
+        saveData();
+        renderMonth(); // Kalender aktualisieren
+    }
+}
+       function updateNextExam() {
+    // Diese Funktion wird nicht mehr benötigt, da das Widget entfernt wurde
+    // Einfach leer lassen oder return
+    return;
+}
+
+        function deleteExam(index) {
+            data.exams.splice(index, 1);
+            saveData();
+            renderExams();
+            renderMonth();
+            updateNextExam();
+        }
+
+      function renderGrades() {
+    const container = document.getElementById('gradesList');
+    container.innerHTML = '';
+container.style.cssText = "display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;";
+    // 1. Noten nach Fächern gruppieren
+    const grouped = {};
+    data.grades.forEach(g => {
+        const subject = g.subject || 'Neues Fach'; // Falls leer
+        if (!grouped[subject]) grouped[subject] = [];
+        grouped[subject].push(g);
+    });
+
+    // 2. Für jedes Fach eine eigene Box erzeugen
+    for (const subject in grouped) {
+        const subjectBox = document.createElement('div');
+        subjectBox.style.cssText =
+            "border: 3px solid var(--accent); padding: 15px; margin-bottom: 20px; border-radius: 5px; background: #fffdfd;";
+
+        // Fach-Header (editierbar wenn "Neues Fach")
+        const isNewSubject = subject === 'Neues Fach';
+        const firstGradeIndex = data.grades.indexOf(grouped[subject][0]);
+        
+        if (isNewSubject) {
+            subjectBox.innerHTML = `
+                <input type="text" 
+                    placeholder="Fach eingeben..." 
+                    style="font-family: Caveat; color: var(--primary); font-size: 1.8em; border: 2px dashed var(--accent); padding: 5px; width: 100%; margin-bottom: 10px;"
+                    oninput="updateGradeSubject(${firstGradeIndex}, this.value)"
+                    value="${data.grades[firstGradeIndex].subject}">
+            `;
+        } else {
+            subjectBox.innerHTML = `
+                <h3 style='font-family: Caveat; color: var(--primary); font-size: 1.8em; margin-bottom: 10px;'>
+                    ${subject}
+                </h3>
+            `;
+        }
+
+        // 3. Einzelnoten des Faches einfügen
+        grouped[subject].forEach((grade) => {
+            const index = data.grades.indexOf(grade);
+            const gradeDiv = document.createElement('div');
+            gradeDiv.className = 'grade-item';
+            gradeDiv.innerHTML = `
+                <input type="number" class="grade-value" value="${grade.value || ''}"
+                    min="0" max="15" step="1" placeholder="0-15"
+                    oninput="updateGrade(${index}, 'value', this.value); calculateAverage();">
+                <select class="grade-type"
+                    onchange="updateGrade(${index}, 'type', this.value); calculateAverage();">
+                    <option value="klein" ${grade.type === 'klein' ? 'selected' : ''}>Kleine Leistung</option>
+                    <option value="gross" ${grade.type === 'gross' ? 'selected' : ''}>Große Leistung</option>
+                </select>
+                <button class="delete-btn" onclick="deleteGrade(${index})">×</button>
+            `;
+            subjectBox.appendChild(gradeDiv);
+        });
+
+        container.appendChild(subjectBox);
+    }
+
+    calculateAverage();
+}
+
+        function addGrade() {
+            data.grades.push({ subject: '', value: '', type: 'klein' });
+            saveData();
+            renderGrades();
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('#gradesList .grade-subject');
+                if (inputs.length) inputs[inputs.length - 1].focus();
+            }, 50);
+        }
+
+       function calculateAverage() {
+    const validGrades = data.grades.filter(g => g.value !== '' && !isNaN(g.value) && g.subject !== '');
+
+    if (validGrades.length === 0) {
+        document.getElementById('avgValue').textContent = '0.00';
+        document.getElementById('avgDetail').textContent = 'Noch keine Noten';
+        return;
+    }
+
+    // Nach Fächern gruppieren
+    const bySubject = {};
+    validGrades.forEach(g => {
+        if (!bySubject[g.subject]) bySubject[g.subject] = { klein: [], gross: [] };
+        bySubject[g.subject][g.type].push(parseFloat(g.value));
+    });
+
+    // Durchschnitt pro Fach berechnen
+    const subjectAverages = [];
+    for (const subject in bySubject) {
+        const klein = bySubject[subject].klein;
+        const gross = bySubject[subject].gross;
+        
+        const kleinAvg = klein.length > 0 ? klein.reduce((a, b) => a + b, 0) / klein.length : 0;
+        const grossAvg = gross.length > 0 ? gross.reduce((a, b) => a + b, 0) / gross.length : 0;
+        
+        // Wenn nur eine Kategorie vorhanden, nur diese zählen
+        let subjectAvg;
+        if (klein.length === 0) {
+            subjectAvg = grossAvg;
+        } else if (gross.length === 0) {
+            subjectAvg = kleinAvg;
+        } else {
+            subjectAvg = (kleinAvg + grossAvg) / 2;
+        }
+        
+        // Fachdurchschnitt aufrunden
+        subjectAverages.push(Math.round(subjectAvg));
+    }
+
+    // Gesamtdurchschnitt
+    const totalAverage = subjectAverages.reduce((a, b) => a + b, 0) / subjectAverages.length;
+
+    // Anzeige
+    const grossCount = validGrades.filter(g => g.type === 'gross').length;
+    const kleinCount = validGrades.filter(g => g.type === 'klein').length;
+
+    document.getElementById('avgValue').textContent = totalAverage.toFixed(2);
+    document.getElementById('avgDetail').textContent = 
+        `${Object.keys(bySubject).length} Fächer • ${validGrades.length} Noten (${grossCount} große, ${kleinCount} kleine)`;
+}
+function updateGradeSubject(index, value) {
+    if (data.grades[index]) {
+        data.grades[index].subject = value;
+        saveData();
+        renderGrades(); // Neu rendern damit Gruppierung aktualisiert wird
+    }
+}
+        function updateGrade(index, field, value) {
+            if (data.grades[index]) {
+                data.grades[index][field] = value;
+                saveData();
+            }
+        }
+
+        function deleteGrade(index) {
+            data.grades.splice(index, 1);
+            saveData();
+            renderGrades();
+        }
+
+        function renderHabits() {
+    const container = document.getElementById('habitsList');
+    container.innerHTML = '';
+    
+    const habitColors = ['#ff6b9d', '#c44569', '#ffa502', '#ff6348', '#1e90ff', '#2ed573', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7'];
+    
+    data.habits.forEach((habit, i) => {
+        const habitColor = habitColors[i % habitColors.length]; // Rotiert durch Farben
+        
+        const item = document.createElement('div');
+        item.className = 'habit-item';
+        item.style.borderLeftColor = habitColor; // Farbiger Rand
+        
+        const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+        let daysHTML = '<div class="habit-days">';
+        days.forEach((day, dayIndex) => {
+            const checked = habit.days && habit.days[dayIndex] ? 'checked' : '';
+            daysHTML += `<div class="habit-day ${checked}" onclick="toggleHabitDay(${i}, ${dayIndex})" style="border-color: ${habitColor};">${day}</div>`;
+        });
+        daysHTML += '</div>';
+        
+        item.innerHTML = `
+            <div class="habit-name">
+                <span style="color: ${habitColor}; font-weight: 600; margin-right: 8px;">●</span>
+                <input type="text" value="${habit.name}" oninput="updateHabit(${i}, this.value)" placeholder="Gewohnheit..." style="border: none; background: transparent; font-family: 'Patrick Hand', cursive; font-size: 1em; width: 100%;">
+            </div>
+            ${daysHTML}
+            <button class="delete-btn" onclick="deleteHabit(${i})">×</button>
+        `;
+        container.appendChild(item);
+    });
+    
+    if (data.habits.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Noch keine Gewohnheiten</div>';
+    }
+}
+
+        function addHabit() {
+    const habitColors = ['#ff6b9d', '#c44569', '#ffa502', '#ff6348', '#1e90ff', '#2ed573', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7'];
+    const color = habitColors[data.habits.length % habitColors.length];
+    
+    data.habits.push({ 
+        name: '', 
+        days: [false, false, false, false, false, false, false],
+        color: color 
+    });
+    saveData();
+    renderHabits();
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('#habitsList input[type="text"]');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+    }, 50);
+}
+        function updateHabit(index, name) {
+            if (data.habits[index]) {
+                data.habits[index].name = name;
+                saveData();
+            }
+        }
+
+        function toggleHabitDay(habitIndex, dayIndex) {
+            if (data.habits[habitIndex]) {
+                if (!data.habits[habitIndex].days) {
+                    data.habits[habitIndex].days = [false, false, false, false, false, false, false];
+                }
+                data.habits[habitIndex].days[dayIndex] = !data.habits[habitIndex].days[dayIndex];
+                saveData();
+                renderHabits();
+            }
+        }
+
+        function deleteHabit(index) {
+            data.habits.splice(index, 1);
+            saveData();
+            renderHabits();
+        }
+
+        function startTimer() {
+            if (!timerRunning) {
+                timerRunning = true;
+                timerInterval = setInterval(() => {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    
+                    if (timerSeconds === 0) {
+                        pauseTimer();
+                        alert('Zeit abgelaufen! 🎉');
+                        timerSeconds = 1500;
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 1500;
+            updateTimerDisplay();
+        }
+function setManualTime() {
+    const minutes = parseInt(document.getElementById("manualMinutes").value);
+    if (!isNaN(minutes) && minutes > 0) {
+        totalSeconds = minutes * 60;
+        timeLeft = totalSeconds;
+        updateTimerDisplay();
+    }
+}
+function formatTimerSeconds(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+}
+
+
+function setManualTime() {
+    const minutes = parseInt(document.getElementById('manualMinutes').value, 10);
+    if (!isNaN(minutes) && minutes > 0) {
+        timerSeconds = minutes * 60;
+        updateTimerDisplay();
+        saveData();
+    } else {
+        alert('Bitte eine gültige Minutenanzahl eingeben (z. B. 25).');
+    }
+}
+
+
+        function updateTimerDisplay() {
+const display = document.getElementById("timerDisplay");
+display.classList.add("flash");
+setTimeout(() => display.classList.remove("flash"), 150);
+
+saveData(); // Auto-Save Integration
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        
+        function setTheme(theme) {
+            data.theme = theme;
+            saveData();
+            applyTheme(theme);
+            document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function applyTheme(theme) {
+            const themes = {
+                pink: { primary: '#d4869c', accent: '#f4b5c5' },
+                purple: { primary: '#9b7fb5', accent: '#d4a5d4' },
+                blue: { primary: '#7eb5d6', accent: '#a5d4e8' },
+                green: { primary: '#b8d4b8', accent: '#d4e8d4' },
+                peach: { primary: '#e8c490', accent: '#f4d4a5' }
+            };
+            
+            const colors = themes[theme] || themes.pink;
+            document.documentElement.style.setProperty('--primary', colors.primary);
+            document.documentElement.style.setProperty('--accent', colors.accent);
+        }
+
+        function setCategoryColor(category, color) {
+            data.categoryColors[category] = color;
+            saveData();
+            applyCategoryColors();
+        }
+
+        function applyCategoryColors() {
+            Object.keys(data.categoryColors).forEach(cat => {
+                document.documentElement.style.setProperty(`--${cat}`, data.categoryColors[cat]);
+            });
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ayas-planer-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Daten wurden exportiert! 📥');
+        }
+
+        function clearAllData() {
+            if (confirm('Wirklich ALLE Daten löschen? Das kann nicht rückgängig gemacht werden!')) {
+                if (confirm('Bist du dir GANZ sicher?')) {
+                    localStorage.removeItem('ayasPlanner');
+                    location.reload();
+                }
+            }
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            
+            const dayNames = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+            document.getElementById('currentDay').textContent = dayNames[now.getDay()];
+            
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        const moods = ['😊', '😃', '😢', '🤩', '😴', '😎', '🥳', '😌'];
+        
+        function renderMoodSelector() {
+            const container = document.getElementById('moodSelector');
+            container.innerHTML = '';
+            const today = getDateKey();
+            moods.forEach(mood => {
+                const span = document.createElement('span');
+                span.className = 'mood-emoji';
+                span.textContent = mood;
+                if (data.mood[today] === mood) span.classList.add('selected');
+                span.onclick = () => setMood(mood);
+                container.appendChild(span);
+            });
+        }
+
+        function prevDay() {
+            currentDate.setDate(currentDate.getDate() - 1);
+            renderDay();
+        }
+
+        function nextDay() {
+            currentDate.setDate(currentDate.getDate() + 1);
+            renderDay();
+        }
+
+        function prevWeek() {
+            currentDate.setDate(currentDate.getDate() - 7);
+            renderWeek();
+        }
+
+        function nextWeek() {
+            currentDate.setDate(currentDate.getDate() + 7);
+            renderWeek();
+        }
+
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderMonth();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderMonth();
+        }
+
+        // INIT
+       // INIT
+loadData();
+renderMoodSelector();
+renderTodos();
+renderMonth();
+renderStundenplan();
+renderExams();
+renderGrades();
+renderHabits();
+renderNotes();
+updateDateTime();
+
+setInterval(updateDateTime, 1000);
+// Scroll-Effekt für Datum/Uhrzeit
+window.addEventListener('scroll', () => {
+    const widget = document.querySelector('.datetime-widget');
+    if (window.scrollY > 50) {
+        widget.classList.add('scrolled');
+    } else {
+        widget.classList.remove('scrolled');
+    }
+}); // --- DATUM, WOCHENTAG & UHRZEIT AKTUALISIEREN ---
+
+// Sofort anzeigen
+updateDateTime();
+// Jede Sekunde aktualisieren
+setInterval(updateDateTime, 1000);
+function renderNotes() {
+    const carousel = document.getElementById("notesCarousel");
+    carousel.innerHTML = "";
+
+    // Notizen anzeigen
+    if (data.notes && data.notes.length > 0) {
+        data.notes.forEach((note, index) => {
+            const card = document.createElement("div");
+            card.className = "note-card fade-in";
+
+            card.innerHTML = `
+                <div class="note-date">${note.date}</div>
+                <textarea class="note-text" oninput="updateNote(${index}, this.value)">${note.text || ''}</textarea>
+                <button class="note-delete" onclick="deleteNote(${index})">×</button>
+            `;
+
+            carousel.appendChild(card);
+        });
+    }
+
+    // Runder + Button am Ende
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-note-btn";
+    addBtn.innerHTML = "+";
+    addBtn.onclick = addNote;
+    carousel.appendChild(addBtn);
+}
+function addNote() {
+    const now = new Date();
+    const date = now.toLocaleDateString("de-DE");
+
+    data.notes.push({
+        text: "",
+        date: date
+    });
+
+    saveData();
+    renderNotes();
+}
+function deleteNote(index) {
+    data.notes.splice(index, 1);
+    saveData();
+    renderNotes();
+}function updateGradeSubject(index, value) {
+    data.grades[index].subject = value;
+    saveData();
+}
+
+function updateGradeValue(index, value) {
+    data.grades[index].value = value;
+    saveData();
+}
+
+function updateNote(index, value) {
+    data.notes[index].text = value;
+    saveData();
+}
+// Sidebar Toggle für Mobile
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const content = document.querySelector('.content-wrapper');
+    sidebar.classList.toggle('active');
+    content.classList.toggle('shifted');
+}
+
+// Sidebar schließen wenn außerhalb geklickt (nur Mobile)
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const hamburger = document.querySelector('.hamburger');
+        
+        if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+            sidebar.classList.remove('active');
+            document.querySelector('.content-wrapper').classList.remove('shifted');
+        }
+    }
+});
+
+    </script>
+ </div>
+    </div>
+</body>
+</html>
