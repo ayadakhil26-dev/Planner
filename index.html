@@ -1,34 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ayas Planer – Firebase Sync</title>
-
-
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-const firebaseConfig = {
-apiKey: "AIzaSyDXFomtJapsasxvWd4eowUBDxZnnj6AgbM",
-authDomain: "planner-ecd50.firebaseapp.com",
-projectId: "planner-ecd50",
-storageBucket: "planner-ecd50.firebasestorage.app",
-messagingSenderId: "510493352134",
-appId: "1:510493352134:web:e2baa09d268e262358b7c7"
-};
-
-
-window.firebaseApp = initializeApp(firebaseConfig);
-window.db = getFirestore(firebaseApp);
-</script>
-
-
-</head>
-<body>    <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ayas Planer</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
@@ -1093,158 +1066,399 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
             cursor: pointer;
         }
 
-    /* ============================= */
-/* Mobile-Optimierung (Handy)   */
-/* ============================= */
-@media (max-width: 768px) {
-    /* Allgemeine Body-Einstellungen */
+        @media (max-width: 768px) {
     body {
-        font-size: 14px;
+        font-size: 16px;
         padding: 5px;
     }
 
-    /* Hamburger Menu sichtbar */
-    .hamburger {
-        display: flex;
-    }
-
-    /* Sidebar ausblenden / Slide-Effekt */
+    /* Sidebar auf Mobile schmal */
     .sidebar {
-        width: 220px; /* volle Breite beim Öffnen */
-        transform: translateX(-100%);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        z-index: 1000;
-        background: var(--sidebar-bg);
-        overflow-y: auto;
+        width: 60px;
+        padding: 10px 0;
+ transform: translateX(-100%);
+transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* <-- Smooth ease */
     }
-
-    .sidebar.active {
-        transform: translateX(0);
-    }
-
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-    }
-
-    .sidebar-overlay.active {
-        display: block;
-    }
-
-    /* Sidebar Inhalt */
+    
     .sidebar-logo {
-        font-size: 1.5em;
-        writing-mode: horizontal-tb;
+        font-size: 1.2em;
+        writing-mode: vertical-rl;
         text-orientation: mixed;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .sidebar-btn {
+        padding: 12px 5px;
+        justify-content: center;
+        font-size: 1.8em;
+    }
+    
+    .sidebar-btn span:last-child {
+        display: none; /* Text verstecken */
+    }
+    
+    .content-wrapper {
+        margin-left: 60px;
+        padding: 5px;
     }
 
-    .sidebar-btn {
-        justify-content: flex-start;
-        font-size: 1em;
+    .container {
         padding: 10px;
     }
 
-    /* Content Wrapper anpassen */
-    .content-wrapper {
-        margin-left: 0;
-        padding: 5px;
+    /* Datum/Uhrzeit Banner */
+    .datetime-widget {
+        padding: 15px 10px;
+        flex-direction: column;
+        gap: 15px;
     }
 
-    /* Widgets & Container */
-    .container, .widgets, .category-btns, .stats-grid, .theme-grid {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
+    .datetime-widget > div {
+        flex-direction: column !important;
+        gap: 10px !important;
+        text-align: center !important;
+    }
+
+    .datetime-widget > div > div {
+        text-align: center !important;
+        flex: 1 !important;
+    }
+
+    .mood-selector {
+        justify-content: center;
+        font-size: 1.5em;
         gap: 10px;
     }
 
-    /* Todo / Inputs */
-    .todo-controls, .habit-days, .timer-btns {
-        flex-direction: column;
-        width: 100%;
-        gap: 8px;
+    .datetime-date {
+        font-size: 2.2em !important;
     }
 
-    input, textarea, select, .pretty-btn, .cat-btn, .timer-btn {
-        width: 100%;
-        font-size: 1em;
-        padding: 10px;
+    .datetime-time {
+        font-size: 2.8em !important;
     }
 
-    /* Überschriften / Widgets */
+    .datetime-day {
+        font-size: 1.8em !important;
+    }
+
+    /* Überschriften */
     h1 {
-        font-size: 2em;
+        font-size: 2.5em;
         margin-bottom: 10px;
     }
 
     .section-title {
-        font-size: 1.5em;
-        margin-bottom: 10px;
+        font-size: 2em;
+        margin-bottom: 12px;
     }
 
-    .datetime-widget {
-        flex-direction: column;
+    /* Widgets Grid */
+    .widgets {
+        grid-template-columns: 1fr;
         gap: 10px;
-        text-align: center;
     }
 
-    .datetime-time { font-size: 2em; }
-    .datetime-date { font-size: 1.5em; }
-    .datetime-day { font-size: 1.2em; }
+    /* Buttons */
+    .category-btns {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .cat-btn {
+        padding: 12px 8px;
+        font-size: 0.95em;
+    }
+
+    /* Todo Items */
+    .todo-item {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .todo-input {
+        font-size: 1em;
+    }
+
+    .todo-controls {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .todo-deadline, .priority-select {
+        width: 100%;
+        min-width: unset;
+    }
 
     /* Kalender */
     .calendar-nav {
+        padding: 10px;
         flex-wrap: wrap;
-        gap: 5px;
     }
 
-    .calendar-title { font-size: 1.2em; width: 100%; }
-    .nav-btn { width: 35px; height: 35px; font-size: 1em; }
-    .cal-header { font-size: 0.8em; padding: 4px 2px; }
-    .cal-day { min-height: 40px; padding: 2px; }
-    .day-num { font-size: 1em; }
+    .calendar-title {
+        font-size: 1.5em;
+        width: 100%;
+        order: -1;
+        margin-bottom: 10px;
+    }
+
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+
+    .cal-header {
+        font-size: 0.85em;
+        padding: 6px 2px;
+    }
+
+    .cal-day {
+        min-height: 50px;
+        padding: 4px;
+    }
+
+    .day-num {
+        font-size: 1.1em;
+    }
+
+    .exam-label {
+        font-size: 0.7em;
+    }
 
     /* Stundenplan */
-    .stundenplan-grid { grid-template-columns: 60px repeat(5, 1fr); gap: 3px; font-size: 0.8em; }
-    .sp-header { font-size: 0.8em; padding: 6px 3px; }
-    .sp-cell { padding: 4px 2px; font-size: 0.75em; min-height: 35px; }
+    .stundenplan-grid {
+        grid-template-columns: 70px repeat(5, 1fr);
+        gap: 4px;
+        font-size: 0.85em;
+    }
+
+    .sp-header {
+        font-size: 0.9em;
+        padding: 8px 4px;
+    }
+
+    .sp-cell {
+        padding: 6px 4px;
+        font-size: 0.85em;
+        min-height: 45px;
+    }
+
+    .sp-time {
+        font-size: 0.8em;
+    }
+
+    .sp-input {
+        font-size: 0.9em;
+    }
+
+    /* Klausuren & Noten */
+    .exam-item, .grade-item {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .exam-date-input, .exam-subject-input,
+    .grade-subject, .grade-value, .grade-type {
+        width: 100%;
+        min-width: unset;
+    }
+
+    /* Gewohnheiten */
+    .habit-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+.habit-colors {
+    --habit-1: #ff6b9d;
+    --habit-2: #c44569;
+    --habit-3: #ffa502;
+    --habit-4: #ff6348;
+    --habit-5: #1e90ff;
+    --habit-6: #2ed573;
+    --habit-7: #a29bfe;
+    --habit-8: #fd79a8;
+    --habit-9: #fdcb6e;
+    --habit-10: #6c5ce7;
+}
+    .habit-name {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .habit-days {
+        width: 100%;
+        justify-content: space-between;
+    }
 
     /* Pomodoro Timer */
-    .timer-display { font-size: 2em; }
-    .timer-settings { flex-direction: column; gap: 8px; }
-    .timer-input, .timer-btn { width: 100%; }
+    .timer-display {
+        font-size: 3em;
+    }
 
-    /* Notes / Modal */
-    .notes-carousel { gap: 10px; padding: 5px 0; }
-    .modal-content { padding: 10px; max-height: calc(100vh - 20px); }
-    .modal-title { font-size: 1.5em; }
+    .timer-settings {
+        flex-direction: column;
+        gap: 10px;
+    }
 
-    /* Sonstiges */
-    .pretty-btn { font-size: 1em; padding: 12px; }
-    .delete-btn { width: 35px; height: 35px; font-size: 1em; }
-    .filter-btn, .filter-option { font-size: 1em; padding: 10px; }
+    .timer-input {
+        width: 100%;
+    }
+
+    .timer-btns {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .timer-btn {
+        width: 100%;
+        padding: 12px;
+    }
+.pretty-btn {
+    background: var(--primary);
+    border: 3px solid var(--accent);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1em;
+    transition: 0.3s;
+    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
+    width: 100%;
 }
 
-/* Extra kleine Handys (< 480px) */
-@media (max-width: 480px) {
-    .datetime-time { font-size: 1.5em; }
-    .datetime-date { font-size: 1.2em; }
-    h1 { font-size: 1.5em; }
-    .section-title { font-size: 1.2em; }
-    .cat-btn, .pretty-btn { font-size: 0.9em; padding: 8px; }
+.pretty-btn:hover {
+    background: var(--accent);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 rgba(212, 134, 156, 0.4);
 }
 
+.pretty-btn:active {
+    transform: translateY(0);
+    box-shadow: 2px 2px 0 rgba(212, 134, 156, 0.3);
+}
+
+    /* Notizen Carousel */
+    .notes-carousel {
+        gap: 15px;
+        padding: 10px 0;
+    }
+
+    /* Modal */
+    .modal-content {
+        padding: 15px;
+        max-height: calc(100vh - 20px);
+    }
+
+    .modal-title {
+        font-size: 1.8em;
+    }
+
+    /* Settings */
+    .theme-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .theme-option {
+        width: 100%;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px;
+    }
+
+    .stat-value {
+        font-size: 2em;
+    }
+
+    /* Tabs */
+    .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tab-btn {
+        padding: 8px 15px;
+        font-size: 1em;
+    }
+
+    /* Buttons */
+    .pretty-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1em;
+    }
+
+    .delete-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1em;
+    }
+
+    /* Filter Dropdown */
+    .filter-btn {
+        font-size: 1em;
+        padding: 12px;
+    }
+
+    .filter-option {
+        font-size: 1em;
+        padding: 12px;
+    }
+}
+/* Hamburger Menu Button */
+.hamburger {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 999;
+    background: var(--primary);
+    border: none;
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+/* Overlay für Mobile wenn Sidebar offen */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
 
 /* Desktop: Sidebar auf Hover */
 @media (min-width: 769px) {
@@ -2930,86 +3144,8 @@ document.addEventListener('click', (e) => {
     }
 });
 
-   
+    </script>
  </div>
     </div>
-
-
-<script type="module">
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-// Globale Datenstruktur
-const data = {
-todos: {},
-daySchedule: {},
-stundenplan: { Montag: {}, Dienstag: {}, Mittwoch: {}, Donnerstag: {}, Freitag: {} },
-exams: [],
-grades: [],
-habits: [],
-notes: [],
-mood: {},
-theme: "pink",
-categoryColors: { schule: "#7eb5d6", freizeit: "#f4b5c5", haushalt: "#b8d4b8", sonstiges: "#e8c490" }
-};
-
-
-// =========================
-// FIREBASE LADEN
-// =========================
-async function loadData() {
-try {
-const ref = doc(db, "users", "aya");
-const snap = await getDoc(ref);
-
-
-if (snap.exists()) {
-Object.assign(data, snap.data());
-console.log("✔ Firebase geladen");
-} else {
-console.log("Erste Nutzung – Firebase leer");
-}
-
-
-} catch (err) {
-console.error("Fehler beim Firebase-Laden", err);
-}
-}
-
-
-// =========================
-// FIREBASE SPEICHERN (mit Delay)
-// =========================
-let saveTimeout;
-
-
-function saveDataThrottled() {
-clearTimeout(saveTimeout);
-saveTimeout = setTimeout(() => saveData(), 300);
-}
-
-
-async function saveData() {
-try {
-await setDoc(doc(db, "users", "aya"), data);
-console.log("✔ Firebase gespeichert");
-} catch (err) {
-console.error("Fehler beim Firebase-Speichern", err);
-}
-}
-
-
-// =========================
-// STARTUP
-// =========================
-await loadData();
-// Danach musst du hier deine Render-Funktionen aufrufen:
-// renderTodos();
-// renderMonth();
-// renderStundenplan();
-// usw.
-
-
-</script>
 </body>
 </html>
