@@ -1,11 +1,173 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+<!-- PWA App Icons -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23d4869c'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-weight='bold'>A</text></svg>">
+
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23d4869c'/><text x='90' y='130' font-size='100' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-weight='bold'>A</text></svg>">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="data:application/json,{%22name%22:%22Ayas%20Planer%22,%22short_name%22:%22Aya%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23fff9f5%22,%22theme_color%22:%22%23d4869c%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23d4869c'/><text x='256' y='380' font-size='320' text-anchor='middle' fill='white' font-family='Arial, sans-serif' font-weight='bold'>A</text></svg>%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22}]}">
+
+<!-- Meta Tags für Mobile -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ayas Planer">
+<meta name="theme-color" content="#d4869c">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ayas Planer</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
+/* ========================================
+   TAGS SYSTEM
+   ======================================== */
+
+.todo-tags-container {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.todo-tag {
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.todo-tag:hover {
+    background: var(--primary);
+    transform: scale(1.05);
+}
+
+.todo-tag-remove {
+    font-size: 1.1em;
+    font-weight: bold;
+    line-height: 1;
+    opacity: 0.8;
+}
+
+.todo-tag-remove:hover {
+    opacity: 1;
+}
+
+.todo-tag-input {
+    border: 1px dashed var(--accent);
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.9em;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.todo-tag-input::placeholder {
+    color: #aaa;
+}
+/* ========================================
+   SWIPE GESTURES
+   ======================================== */
+
+.todo-item {
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible;
+}
+
+.todo-item.swiping {
+    transition: none;
+}
+
+.todo-item.swipe-left {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.todo-item.swipe-right {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Swipe Actions Background */
+.todo-item::before,
+.todo-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: -1;
+}
+
+/* Swipe Links = Löschen (Rot) */
+.todo-item::after {
+    content: '🗑️';
+    right: 0;
+    background: #ff6b6b;
+    border-radius: 0 5px 5px 0;
+}
+
+/* Swipe Rechts = Fertig (Grün) */
+.todo-item::before {
+    content: '✓';
+    left: 0;
+    background: #51cf66;
+    border-radius: 5px 0 0 5px;
+    color: white;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.todo-item.show-left-action::after {
+    opacity: 1;
+}
+
+.todo-item.show-right-action::before {
+    opacity: 1;
+}
+/* ========================================
+   DRAG & DROP STYLES
+   ======================================== */
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: var(--accent);
+    transform: rotate(2deg);
+}
+
+.sortable-drag {
+    opacity: 0.8;
+    cursor: grabbing !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    transform: scale(1.05);
+}
+
+.todo-item {
+    cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.todo-item:active {
+    cursor: grabbing;
+}
         :root {
             --primary: #d4869c;
             --accent: #f4b5c5;
@@ -16,8 +178,127 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+/* --- ULTIMATIVER DARK MODE MASTER-FIX --- */
+body.dark-mode {
+    background-color: #121420 !important; 
+    color: #e0e0e0 !important;
+}
 
-        body {
+/* 1. DYNAMISCHE LEISTEN (BANNER & SIDEBAR) */
+body.dark-mode .datetime-widget,
+body.dark-mode .sidebar {
+    background: linear-gradient(135deg, var(--primary) 0%, #121420 100%) !important;
+    border-bottom: 2px solid var(--primary) !important;
+    border-right: 2px solid var(--primary) !important;
+}
+
+/* 2. DER "WEISS-KILLER" FÜR ALLE BOXEN & CONTAINER */
+body.dark-mode .container,
+body.dark-mode .content-wrapper,
+body.dark-mode .todo-paper, 
+body.dark-mode .todo-item,
+body.dark-mode .note-paper, 
+body.dark-mode .note-card,
+body.dark-mode .widget, 
+body.dark-mode .stat-card, 
+body.dark-mode .hour-block, 
+body.dark-mode .cal-day, 
+body.dark-mode .cal-header,
+body.dark-mode .calendar-nav,
+body.dark-mode .sp-cell,
+body.dark-mode .sp-header,
+body.dark-mode .grade-item,
+body.dark-mode .exam-item,
+body.dark-mode .habit-item,
+body.dark-mode .pomodoro,
+body.dark-mode .filter-btn,
+body.dark-mode .filter-menu,
+body.dark-mode .cat-btn,
+body.dark-mode .modal-content,
+body.dark-mode .stats-grid,
+body.dark-mode .quadrant,
+body.dark-mode .eisenhower-container,
+body.dark-mode .school-header,   /* FIX: Schule Überschrift Box */
+body.dark-mode .notes-header,    /* FIX: Notizen Überschrift Box */
+body.dark-mode .section-header,  /* FIX: Allgemeine Header */
+body.dark-mode [class*="paper"], 
+body.dark-mode [class*="card"],
+body.dark-mode [class*="item"],
+body.dark-mode [class*="quadrant"] {
+    background-color: #1c1f2f !important;
+    background-image: none !important;
+    color: #ffffff !important;
+    border: 1px solid #2d3142 !important;
+}
+
+/* 3. EISENHOWER SPEZIAL-FIX (Killt die hellen Farben) */
+body.dark-mode .quadrant.urgent-important,
+body.dark-mode .quadrant.important-not-urgent,
+body.dark-mode .quadrant.urgent-not-important,
+body.dark-mode .quadrant.not-urgent-not-important {
+    background-color: #1c1f2f !important;
+    background-image: none !important;
+    border: 2px solid var(--primary) !important;
+}
+
+/* 4. ÜBERSCHRIFTEN (Schule, Noten, Klausuren) */
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3,
+body.dark-mode .section-title,
+body.dark-mode .sp-title,
+body.dark-mode .grade-title,
+body.dark-mode .stat-label,
+body.dark-mode .stat-value,
+body.dark-mode .quadrant h3 {
+    color: var(--accent) !important;
+    background-color: transparent !important;
+}
+
+/* 5. EINGABEFELDER & TEXTE */
+body.dark-mode textarea,
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode .note-text,
+body.dark-mode .todo-input,
+body.dark-mode .grade-input,
+body.dark-mode .sp-input,
+body.dark-mode .hour-input {
+    background-color: transparent !important;
+    color: white !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* 6. RINGBUCH & HEUTE */
+body.dark-mode .note-card::before {
+    background: repeating-linear-gradient(to right, transparent 0 18px, #121420 18px 22px) !important;
+}
+body.dark-mode .cal-day.today {
+    background: var(--primary) !important;
+}
+body.dark-mode .habit-label {
+    background: rgba(46, 213, 115, 0.2) !important;
+    color: #51cf66 !important;
+}
+
+body.dark-mode .holiday-label {
+    background: rgba(255, 215, 0, 0.3) !important;
+    color: #ffd700 !important;
+}
+
+body.dark-mode .exam-label {
+    background: rgba(212, 134, 156, 0.25) !important;
+    color: var(--accent) !important;
+}
+/* 7. PRODUKTIVITÄT DIAGRAMM FIX */
+body.dark-mode .chart-container {
+    background: #1c1f2f !important;
+    border-radius: 15px;
+    padding: 10px;
+}
+/* --- ENDE MASTER-FIX --- */    
+body {
             font-family: 'Patrick Hand', cursive;
             background: #fff9f5;
             padding: 10px;
@@ -38,13 +319,23 @@
     background: linear-gradient(135deg, var(--primary), var(--accent));
     color: white;
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 10px;
     text-align: center;
     margin-bottom: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     transition: all 0.3s ease;
-  position: relative;
-  z-index: 550; /* oben halten */
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    box-sizing: border-box;
+    z-index: 550;
+}
+@media (max-width: 768px) {
+    .datetime-widget {
+        left: 0;
+    }
 }
 
 /* Abstand unter dem Header, falls nötig */
@@ -145,31 +436,7 @@
             transform: scale(1.4);
         }
 
-        .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 250px;
-    height: 100vh;
-    background: linear-gradient(180deg, var(--primary), var(--accent));
-    padding: 20px 0;
-    box-shadow: 3px 0 15px rgba(0,0,0,0.2);
-    z-index: 1000;
-    overflow-y: auto;
-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth ease */
-    will-change: transform; /* Performance boost */
-}
-
-.sidebar-logo {
-letter-spacing: 1px;
-    font-weight: 700;
-    font-family: 'Caveat', cursive;
-    font-size: 2em;
-    color: white;
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 0 20px;
-}
+     
 
 .sidebar-nav {
     display: flex;
@@ -186,14 +453,14 @@ letter-spacing: 1px;
     font-family: 'Patrick Hand', cursive;
     font-size: 1.1em;
     text-align: left;
-    transition: 0.3s;
+    transition: background 0.3s;
     border-left: 4px solid transparent;
     display: flex;
     align-items: center;
     gap: 15px;
-
+    position: relative;
+    height: 50px;
 }
-
 .sidebar-btn:hover {
     background: rgba(255,255,255,0.2);
     border-left-color: white;
@@ -212,13 +479,13 @@ letter-spacing: 1px;
 
 .container {
     max-width: 100%;
-    margin: 0 auto; 
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    min-height: 100vh;
+    margin: 0 auto;
+    background: white;
+    border-radius: 5px;
+    padding: 80px 70px 70px 70px;
+    border: 3px solid var(--primary);
+    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
 }
-
 /        .tab-btn.active {
             background: var(--primary);
             color: white;
@@ -270,14 +537,35 @@ letter-spacing: 1px;
 
         .filter-menu.active { display: block; }
 
-        .filter-option {
-            padding: 14px;
-            cursor: pointer;
-            border-bottom: 1px solid #fce4ec;
-            font-size: 1.05em;
-        }
+.filter-option {
+    padding: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #fce4ec;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s;
+}
 
-        .filter-option:hover {
+.filter-option.active {
+    background: #fff0f5;
+    font-weight: 600;
+}
+
+.filter-checkbox {
+    font-size: 1.2em;
+    color: var(--accent);
+}
+
+.filter-option.active .filter-checkbox {
+    content: '☑';
+}
+
+.filter-option.active .filter-checkbox::before {
+    content: '☑';
+    position: absolute;
+}        .filter-option:hover {
             background: #fef9fb;
         }
 
@@ -343,7 +631,10 @@ letter-spacing: 1px;
             border-radius: 3px;
             border-left: 5px solid;
         }
-
+.todo-item.overdue {
+    background: #ffe0e0;
+    border-left-color: #ff4444 !important;
+}
         .todo-row {
             display: flex;
             gap: 10px;
@@ -444,39 +735,56 @@ letter-spacing: 1px;
             flex-shrink: 0;
         }
 
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
+       .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    max-width: 100%;
+    background: #fce4ec;
+    border: 2px solid #fce4ec;
+    border-radius: 5px;
+    overflow: hidden;
+}
 
         .cal-header {
-            text-align: center;
-            font-weight: 600;
-            color: var(--primary);
-            padding: 10px 6px;
-            background: #fef9fb;
-            border-radius: 3px;
-            font-size: 1em;
-        }
+    text-align: center;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 8px 4px;
+    background: white;
+    font-size: 0.95em;
+    border: none;
+}
 
-        .cal-day {
-            aspect-ratio: 1;
-            background: white;
-            border: 2px solid #fce4ec;
-            border-radius: 3px;
-            padding: 6px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            position: relative;
-            min-height: 60px;
-            transition: 0.2s;
-        }
+.cal-day {
+    aspect-ratio: 1;
+    background: white;
+    border: 1px solid #fce4ec;
+    border-radius: 0;
+    padding: 4px 3px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    position: relative;
+    min-height: 85px;
+    overflow: hidden;
+    transition: 0.2s;
+}
+.cal-day::-webkit-scrollbar {
+    width: 3px;
+}
 
-        .cal-day:active {
+.cal-day::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 3px;
+}
+```
+
+---
+
+     .cal-day:active {
             transform: scale(0.95);
         }
 
@@ -500,44 +808,46 @@ letter-spacing: 1px;
             font-family: 'Caveat', cursive;
         }
 
-        .exam-label {
-            font-size: 0.8em;
-            color: var(--primary);
-            text-align: center;
-            margin-top: 3px;
-            font-weight: 600;
-            line-height: 1.2;
-            word-break: break-word;
-pointer-events: none;
-        }
+.habit-label {
+    font-size: 0.68em;
+    color: #2ed573;
+    text-align: left;
+    font-weight: 500;
+    line-height: 1.2;
+    pointer-events: none;
+    background: rgba(46, 213, 115, 0.1);
+    padding: 3px 4px;
+    border-radius: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.holiday-label {
+    font-size: 0.68em;
+    background: #ffd700;
+    color: #333;
+    padding: 3px 4px;
+    border-radius: 2px;
+    text-align: left;
+    font-weight: 600;
+    line-height: 1.2;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cal-day .exam-label {
+    background: rgba(212, 134, 156, 0.15);
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+}
 
         .cal-day.today .exam-label {
             color: white;
         }
 
-        .todo-dot {
-display: flex;    
-width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 4px;
-pointer-events: none;
-}
-
-.habit-dots {
-    display: flex;
-    gap: 3px;
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 90%;
-pointer-events: none;
-}       
-        .day-schedule {
+                .day-schedule {
             display: grid;
             gap: 10px;
         }
@@ -1065,347 +1375,365 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
             border-radius: 3px;
             cursor: pointer;
         }
-
-        @media (max-width: 768px) {
-    body {
-        font-size: 16px;
-        padding: 5px;
-    }
-
-    /* Sidebar auf Mobile schmal */
-    .sidebar {
-        width: 60px;
-        padding: 10px 0;
- transform: translateX(-100%);
-transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* <-- Smooth ease */
+/* Touch-Optimierung */
+@media (hover: none) and (pointer: coarse) {
+    .cat-btn, .todo-checkbox, .habit-day, .cal-day, .timer-btn, .sidebar-btn, .delete-btn {
+        min-height: 44px;
+        min-width: 44px;
     }
     
+    .cat-btn:active, .timer-btn:active, .sidebar-btn:active {
+        transform: scale(0.95);
+        background: var(--accent);
+    }
+    
+    .cal-day:active {
+        transform: scale(0.98);
+        background: var(--accent);
+    }
+    
+    input, textarea, select {
+        font-size: 16px !important; /* Verhindert Zoom bei iOS */
+    }
+}
+/* --- SIDEBAR BASIS --- */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    padding: 20px 0;
+    box-shadow: 3px 0 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    overflow-x: hidden;
+    /* Die Transition sorgt für das sanfte Gleiten */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s ease;
+}
+
+/* Zustand wenn die Sidebar eingeklappt ist (nur Icons sichtbar) */
+.sidebar.collapsed {
+    width: 60px;
+}
+
+/* Content-Verschiebung */
+.content-wrapper {
+    margin-left: 250px;
+    transition: margin-left 0.4s ease;
+}
+
+.content-wrapper.shifted {
+    margin-left: 60px;
+}
+
+/* Mobile-Verhalten */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%); /* Standardmäßig ganz ausgeblendet */
+        width: 250px;
+    }
+    .sidebar.active {
+        transform: translateX(0); /* Kommt von links reingefahren */
+    }
+    .content-wrapper {
+        margin-left: 0 !important; /* Kein Rand auf Mobile */
+    }
+}
+/* --- SIDEBAR ITEMS (Die Links/Icons) --- */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: white !important; /* Erzwingt Sichtbarkeit */
+    text-decoration: none;
+    transition: background 0.3s;
+    white-space: nowrap; /* Verhindert Textumbruch */
+    width: 100%;
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-item i {
+    min-width: 30px; /* Platz für das Icon */
+    font-size: 1.2rem;
+    margin-right: 15px;
+    text-align: center;
+}
+
+/* Versteckt den Text, wenn die Sidebar die Klasse .collapsed hat */
+.sidebar.collapsed .sidebar-item span {
+    display: none;
+}
+
+/* Verhindert, dass Icons beim Einklappen springen */
+.sidebar.collapsed .sidebar-item i {
+    margin-right: 0;
+    width: 100%;
+}
+/* --- MOBILE VERHALTEN (Verschwinden) --- */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 250px;
+        transform: translateX(-100%); /* Ganz weg links */
+    }
+    .sidebar.active {
+        transform: translateX(0); /* Kommt rein wenn Hamburger geklickt */
+    }
+}        /* ========================================
+   MOBILE OPTIMIERUNG (768px und kleiner)
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* BASE */
+    body {
+        font-size: 15px;
+        padding: 0;
+    }
+
+    /* HAMBURGER MENU */
+    .hamburger {
+        display: flex !important;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 1002;
+        background: var(--primary);
+        border: none;
+        color: white;
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        cursor: pointer;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .hamburger span {
+        width: 24px;
+        height: 3px;
+        background: white;
+        border-radius: 2px;
+        transition: 0.3s;
+    }
+
+        
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+
     .sidebar-logo {
-        font-size: 1.2em;
-        writing-mode: vertical-rl;
+        font-size: 2em;
+        writing-mode: horizontal-tb;
         text-orientation: mixed;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
+        padding: 0 20px;
     }
     
     .sidebar-btn {
-        padding: 12px 5px;
-        justify-content: center;
-        font-size: 1.8em;
+        padding: 16px 20px;
+        justify-content: flex-start;
+        font-size: 1.1em;
+        gap: 12px;
+    }
+    
+    .sidebar-btn span:first-child {
+        font-size: 1.4em;
     }
     
     .sidebar-btn span:last-child {
-        display: none; /* Text verstecken */
+        display: inline;
     }
-    
+
+    /* CONTENT WRAPPER */
     .content-wrapper {
-        margin-left: 60px;
-        padding: 5px;
+        margin-left: 0 !important;
+        padding: 0;
     }
 
+    /* CONTAINER */
     .container {
-        padding: 10px;
+        padding: 16px;
+        border-radius: 0;
     }
 
-    /* Datum/Uhrzeit Banner */
+    /* DATETIME BANNER */
     .datetime-widget {
-        padding: 15px 10px;
-        flex-direction: column;
-        gap: 15px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border-radius: 0;
     }
 
     .datetime-widget > div {
-        flex-direction: column !important;
-        gap: 10px !important;
-        text-align: center !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 12px !important;
     }
 
-    .datetime-widget > div > div {
-        text-align: center !important;
+    .mood-left {
+        flex: 0 0 auto !important;
+        min-width: 110px;
+    }
+
+    .datetime-center {
         flex: 1 !important;
+        text-align: center !important;
     }
 
-    .mood-selector {
-        justify-content: center;
-        font-size: 1.5em;
-        gap: 10px;
+    .quote-right {
+        display: none !important;
     }
 
     .datetime-date {
-        font-size: 2.2em !important;
+        font-size: 1.4em !important;
+        margin-bottom: 4px;
     }
 
     .datetime-time {
-        font-size: 2.8em !important;
+        font-size: 1.8em !important;
+        font-weight: 700;
     }
 
     .datetime-day {
-        font-size: 1.8em !important;
+        font-size: 1.1em !important;
+        margin-bottom: 4px;
     }
 
-    /* Überschriften */
+    /* MOOD SELECTOR */
+.mood-selector {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 6px;
+    margin-left: 0 !important;
+    padding: 0;
+}
+
+.mood-emoji {
+    font-size: 1.3em !important;
+    padding: 4px;
+    text-align: center;
+}    /* ÜBERSCHRIFTEN */
     h1 {
-        font-size: 2.5em;
-        margin-bottom: 10px;
-    }
-
-    .section-title {
-        font-size: 2em;
+        font-size: 1.8em;
         margin-bottom: 12px;
     }
 
-    /* Widgets Grid */
-    .widgets {
-        grid-template-columns: 1fr;
-        gap: 10px;
+    .section-title {
+        font-size: 1.6em;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
     }
 
-    /* Buttons */
+    /* WIDGETS */
+    .widgets {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .widget {
+        padding: 12px;
+    }
+
+    .widget-title {
+        font-size: 1.2em;
+    }
+
+    /* BUTTONS */
     .category-btns {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        gap: 10px;
+        margin-bottom: 16px;
     }
 
     .cat-btn {
-        padding: 12px 8px;
-        font-size: 0.95em;
+        padding: 14px 12px;
+        font-size: 1em;
+        min-height: 48px;
+        border-width: 2px;
     }
 
-    /* Todo Items */
+    /* TODO ITEMS */
+    .todo-paper {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
     .todo-item {
-        padding: 12px;
-        gap: 8px;
+        padding: 14px 12px;
+        gap: 10px;
+        margin-bottom: 10px;
+        border-left-width: 4px;
+    }
+
+    .todo-row {
+        gap: 12px;
+    }
+
+    .todo-checkbox {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
     }
 
     .todo-input {
-        font-size: 1em;
+        font-size: 1.05em;
+        padding: 4px 0;
     }
 
     .todo-controls {
         width: 100%;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 90px 44px 44px;
+        gap: 8px;
+        align-items: center;
     }
 
-    .todo-deadline, .priority-select {
-        width: 100%;
-        min-width: unset;
-    }
-
-    /* Kalender */
-    .calendar-nav {
-        padding: 10px;
-        flex-wrap: wrap;
-    }
-
-    .calendar-title {
-        font-size: 1.5em;
-        width: 100%;
-        order: -1;
-        margin-bottom: 10px;
-    }
-
-    .nav-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2em;
-    }
-
-    .cal-header {
-        font-size: 0.85em;
-        padding: 6px 2px;
-    }
-
-    .cal-day {
-        min-height: 50px;
-        padding: 4px;
-    }
-
-    .day-num {
-        font-size: 1.1em;
-    }
-
-    .exam-label {
-        font-size: 0.7em;
-    }
-
-    /* Stundenplan */
-    .stundenplan-grid {
-        grid-template-columns: 70px repeat(5, 1fr);
-        gap: 4px;
-        font-size: 0.85em;
-    }
-
-    .sp-header {
+    .todo-deadline {
         font-size: 0.9em;
-        padding: 8px 4px;
+        padding: 8px;
     }
 
-    .sp-cell {
-        padding: 6px 4px;
-        font-size: 0.85em;
-        min-height: 45px;
-    }
-
-    .sp-time {
-        font-size: 0.8em;
-    }
-
-    .sp-input {
+    .priority-select {
         font-size: 0.9em;
-    }
-
-    /* Klausuren & Noten */
-    .exam-item, .grade-item {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .exam-date-input, .exam-subject-input,
-    .grade-subject, .grade-value, .grade-type {
-        width: 100%;
-        min-width: unset;
-    }
-
-    /* Gewohnheiten */
-    .habit-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-.habit-colors {
-    --habit-1: #ff6b9d;
-    --habit-2: #c44569;
-    --habit-3: #ffa502;
-    --habit-4: #ff6348;
-    --habit-5: #1e90ff;
-    --habit-6: #2ed573;
-    --habit-7: #a29bfe;
-    --habit-8: #fd79a8;
-    --habit-9: #fdcb6e;
-    --habit-10: #6c5ce7;
-}
-    .habit-name {
-        width: 100%;
-        min-width: unset;
-    }
-
-    .habit-days {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    /* Pomodoro Timer */
-    .timer-display {
-        font-size: 3em;
-    }
-
-    .timer-settings {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .timer-input {
-        width: 100%;
-    }
-
-    .timer-btns {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .timer-btn {
-        width: 100%;
-        padding: 12px;
-    }
-.pretty-btn {
-    background: var(--primary);
-    border: 3px solid var(--accent);
-    color: white;
-    padding: 14px 24px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Patrick Hand', cursive;
-    font-size: 1.1em;
-    transition: 0.3s;
-    box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
-    width: 100%;
-}
-
-.pretty-btn:hover {
-    background: var(--accent);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 4px 4px 0 rgba(212, 134, 156, 0.4);
-}
-
-.pretty-btn:active {
-    transform: translateY(0);
-    box-shadow: 2px 2px 0 rgba(212, 134, 156, 0.3);
-}
-
-    /* Notizen Carousel */
-    .notes-carousel {
-        gap: 15px;
-        padding: 10px 0;
-    }
-
-    /* Modal */
-    .modal-content {
-        padding: 15px;
-        max-height: calc(100vh - 20px);
-    }
-
-    .modal-title {
-        font-size: 1.8em;
-    }
-
-    /* Settings */
-    .theme-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-
-    .theme-option {
-        width: 100%;
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .stat-card {
-        padding: 12px;
-    }
-
-    .stat-value {
-        font-size: 2em;
-    }
-
-    /* Tabs */
-    .tabs {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .tab-btn {
-        padding: 8px 15px;
-        font-size: 1em;
-    }
-
-    /* Buttons */
-    .pretty-btn {
-        width: 100%;
-        padding: 12px;
-        font-size: 1em;
+        padding: 8px;
     }
 
     .delete-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 1.1em;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.2em;
     }
 
-    /* Filter Dropdown */
+    /* FILTER & SEARCH */
+    #quickAddInput, #searchInput {
+        font-size: 1em !important;
+        padding: 12px !important;
+        margin-bottom: 12px;
+    }
+
     .filter-btn {
         font-size: 1em;
         padding: 12px;
@@ -1415,144 +1743,526 @@ transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* <-- Smooth ease */
         font-size: 1em;
         padding: 12px;
     }
-}
-/* Hamburger Menu Button */
-.hamburger {
-    display: none;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 999;
-    background: var(--primary);
-    border: none;
-    color: white;
-    width: 45px;
-    height: 45px;
-    border-radius: 5px;
-    cursor: pointer;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-}
 
-.hamburger span {
-    width: 25px;
-    height: 3px;
-    background: white;
+    /* KALENDER */
+    .calendar-nav {
+        padding: 12px;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: nowrap;
+    }
+
+    .calendar-title {
+        font-size: 1.3em;
+        flex: 1;
+        text-align: center;
+        order: 0;
+        width: auto;
+        margin-bottom: 0;
+    }
+
+    .nav-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.3em;
+        flex-shrink: 0;
+    }
+
+    .calendar-grid {
+        gap: 2px;
+    }
+
+    .cal-header {
+        font-size: 0.75em;
+        padding: 8px 4px;
+        font-weight: 600;
+    }
+
+.cal-day {
+    min-height: 80px !important;
+    padding: 3px 2px;
+    font-size: 0.85em;
+.day-num {
+    font-size: 1.1em;
+    font-weight: 700;
+    font-family: 'Caveat', cursive;
+    text-align: left;
+    align-self: flex-start;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.exam-label {
+    font-size: 0.68em;
+    color: var(--primary);
+    text-align: left;
+    font-weight: 600;
+    line-height: 1.2;
+    pointer-events: none;
+    background: rgba(212, 134, 156, 0.15);
+    padding: 3px 4px;
     border-radius: 2px;
-    transition: 0.3s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-/* Overlay für Mobile wenn Sidebar offen */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+.cal-day-top {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    align-items: stretch;
 }
 
-.sidebar-overlay.active {
-    display: block;
+.cal-day-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: auto;
+}
+.habit-label {
+    font-size: 0.65em !important;
+    padding: 1px 3px !important;
+    margin-top: 2px;
+    line-height: 1.1;
 }
 
-/* Desktop: Sidebar auf Hover */
+.holiday-label {
+    font-size: 0.65em !important;
+    padding: 1px 3px !important;
+    margin-top: 2px;
+}
+.calendar-grid {
+    gap: 5px; /* Mehr Abstand zwischen Tagen */
+}
+
+.cal-header {
+    font-size: 0.8em;
+    padding: 10px 4px;
+    font-weight: 700;
+}    .habit-dots {
+        bottom: 3px;
+        gap: 2px;
+        max-width: 95%;
+    }
+
+    .todo-dot {
+        width: 5px;
+        height: 5px;
+    }
+
+    /* STUNDENPLAN */
+    .stundenplan-grid {
+        grid-template-columns: 65px repeat(5, 1fr);
+        gap: 3px;
+        font-size: 0.8em;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sp-header {
+        font-size: 0.75em;
+        padding: 6px 2px;
+        line-height: 1.2;
+    }
+
+    .sp-cell {
+        padding: 4px 2px;
+        font-size: 0.75em;
+        min-height: 50px;
+    }
+
+    .sp-time {
+        font-size: 0.7em;
+        line-height: 1.2;
+    }
+
+    .sp-input {
+        font-size: 0.8em;
+    }
+
+    /* KLAUSUREN & NOTEN */
+    .exam-item, .grade-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .exam-date-input, .exam-subject-input,
+    .grade-subject, .grade-value, .grade-type {
+        width: 100%;
+        min-width: unset;
+        font-size: 1em;
+        padding: 12px;
+    }
+
+    .grade-value {
+        width: 100%;
+    }
+
+    .grade-type {
+        width: 100%;
+    }
+
+    .grade-average {
+        padding: 16px;
+        font-size: 1em;
+        margin-top: 16px;
+    }
+
+    .grade-average-value {
+        font-size: 2.5em;
+    }
+
+    /* GEWOHNHEITEN */
+    .habit-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .habit-name {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .habit-days {
+        width: 100%;
+        justify-content: space-between;
+        gap: 4px;
+    }
+
+    .habit-day {
+        width: 36px;
+        height: 36px;
+        font-size: 0.85em;
+    }
+
+    /* POMODORO */
+    .pomodoro {
+        padding: 20px 16px;
+    }
+
+    .timer-display {
+        font-size: 3em;
+        margin: 16px 0;
+    }
+
+    .timer-settings {
+        flex-direction: column;
+        gap: 12px;
+        margin: 16px 0;
+    }
+
+    .timer-input {
+        width: 100%;
+        font-size: 1em;
+        padding: 12px;
+    }
+
+    .timer-btns {
+        flex-direction: row;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .timer-btn {
+        flex: 1;
+        min-width: calc(50% - 5px);
+        padding: 14px;
+        font-size: 1em;
+    }
+
+    #manualMinutes {
+        width: 100%;
+        padding: 12px;
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+
+    /* NOTIZEN */
+    .notes-carousel {
+        gap: 12px;
+        padding: 12px 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 8px;
+    }
+
+    .note-card {
+        width: 280px !important;
+        min-width: 280px !important;
+        height: 320px !important;
+        scroll-snap-align: start;
+        padding: 16px;
+    }
+
+    .note-text {
+        font-size: 1em;
+        height: calc(100% - 70px);
+        margin-top: 50px;
+    }
+
+    .note-date {
+        font-size: 1em;
+        top: 35px;
+    }
+
+    .note-delete {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1em;
+    }
+
+    .add-note-btn {
+        width: 56px !important;
+        height: 56px !important;
+        min-width: 56px !important;
+        font-size: 1.8em;
+    }
+
+    /* MODAL */
+    .modal {
+        padding: 0;
+    }
+
+    .modal-content {
+        padding: 16px;
+        max-height: calc(100vh - 40px);
+        margin: 20px 10px;
+        max-width: calc(100% - 20px);
+    }
+
+    .modal-title {
+        font-size: 1.5em;
+    }
+
+    .modal-header {
+        margin-bottom: 16px;
+        gap: 10px;
+    }
+
+    .close-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2em;
+    }
+
+    /* STATS */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-value {
+        font-size: 2em;
+    }
+
+    .stat-label {
+        font-size: 0.9em;
+    }
+
+    /* EISENHOWER */
+    #eisenhower > div {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    #eisenhower h3 {
+        font-size: 1.3em !important;
+    }
+
+    /* SETTINGS */
+    .theme-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .theme-option {
+        width: 100%;
+        aspect-ratio: 1;
+    }
+
+    /* TABS */
+    .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .tab-btn {
+        padding: 10px 16px;
+        font-size: 1em;
+        flex: 1;
+        min-width: calc(50% - 4px);
+    }
+
+    /* PRETTY BUTTONS */
+    .pretty-btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 1em;
+    }
+
+    /* PROGRESS BAR */
+    .progress {
+        height: 32px;
+        margin-bottom: 16px;
+    }
+
+    .progress-fill {
+        font-size: 1em;
+    }
+
+    /* TOUCH OPTIMIZATION */
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+
+    button, .cat-btn, .todo-checkbox, .habit-day, .cal-day, 
+    .timer-btn, .sidebar-btn, .delete-btn, .nav-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .cat-btn:active, .timer-btn:active, .sidebar-btn:active,
+    .nav-btn:active, .close-btn:active {
+        transform: scale(0.95);
+        background: var(--accent);
+    }
+
+    .cal-day:active {
+        transform: scale(0.98);
+    }
+
+    /* SCROLLBARS */
+    .stundenplan-grid::-webkit-scrollbar,
+    .notes-carousel::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .stundenplan-grid::-webkit-scrollbar-thumb,
+    .notes-carousel::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 2px;
+    }
+}
+
+/* TOUCH DEVICES (zusätzlich) */
+@media (hover: none) and (pointer: coarse) {
+    .cat-btn, .todo-checkbox, .habit-day, .cal-day, 
+    .timer-btn, .sidebar-btn, .delete-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .cat-btn:active, .timer-btn:active, .sidebar-btn:active {
+        transform: scale(0.95);
+        background: var(--accent);
+    }
+    
+    .cal-day:active {
+        transform: scale(0.98);
+        background: var(--accent);
+    }
+    
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+}
+
 @media (min-width: 769px) {
     .sidebar {
         width: 70px;
-        transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        will-change: width;
-        overflow: hidden; /* Verhindert Jumping */
     }
-
+    
     .sidebar:hover {
         width: 250px;
     }
-
+    
     .sidebar-logo {
         font-size: 1.5em;
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        transition: opacity 0.3s ease;
-        opacity: 0;
-        height: 60px; /* Feste Höhe! */
+        margin-bottom: 30px;
+        height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: all 0.3s ease;
     }
-
+    
     .sidebar:hover .sidebar-logo {
-        writing-mode: horizontal-tb;
         font-size: 2em;
-        opacity: 1;
     }
-
+    
     .sidebar-btn {
-        padding: 15px 0; /* Kein horizontales Padding! */
-        transition: background 0.3s ease;
-        position: relative;
-        height: 50px; /* Feste Höhe verhindert Springen! */
-        display: flex;
-        align-items: center;
-margin-bottom: 8px; /* Mehr Abstand zwischen den Buttons! */
+        padding: 15px 0;
+        justify-content: flex-start;
+        overflow: hidden;
+position: relative; 
     }
-
-    .sidebar-btn span:first-child {
-        font-size: 1.3em;
-        position: absolute;
-        left: 23px; /* Zentriert bei 70px breite */
-        transform: none; /* Kein Transform! */
-        width: 24px; /* Feste Breite */
-        text-align: center;
-    }
-
+    
+   .sidebar-btn span:first-child {
+    font-size: 1.3em;
+    min-width: 70px;
+    text-align: center;
+    flex-shrink: 0;
+    position: absolute;  /* NEU */
+    left: 0;  /* NEU */
+}
+    
     .sidebar-btn span:last-child {
         opacity: 0;
-        position: absolute;
-        left: 70px; /* Fixed position */
-        transition: opacity 0.3s ease;
         white-space: nowrap;
-        pointer-events: none; /* Verhindert Click-Probleme */
-    }
-
+        transition: opacity 0.3s ease;
+     visibility: hidden;  /* NEU */
+    margin-left: 70px;  /* NEU - Platz für das Icon */
+}
+    
     .sidebar:hover .sidebar-btn span:last-child {
         opacity: 1;
+visibility: visible;
     }
-
+    
     .content-wrapper {
         margin-left: 70px;
-        transition: margin-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition: margin-left 0.3s ease;
     }
-.mood-left {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
+    
+    .mood-left {
+        flex: 1;
+        display: flex;
+        justify-content: flex-start;
+    }
+    
+    .datetime-center {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .quote-right {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        padding-right: 10px;
+    }
+    
+    .daily-quote {
+        font-size: 2.1em;
+        opacity: 0.85;
+        font-family: 'Caveat', cursive;
+        color: white;
+    }
 }
-
-.datetime-center {
-    flex: 1;
-    text-align: center;
-}
-
-.quote-right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 10px;
-}
-
-.daily-quote {
-    font-size: 2.1em;
-    opacity: 0.85;
-    font-family: 'Caveat', cursive;
-    color: white;
-}
-
-}    </style>
+   </style>
 </head>
 
 <body>
@@ -1582,9 +2292,15 @@ margin-bottom: 8px; /* Mehr Abstand zwischen den Buttons! */
             <button class="sidebar-btn" onclick="switchTab('pomodoro')">
                 <span> ⏱️ </span> <span>Timer</span>
             </button>
-            <button class="sidebar-btn" onclick="switchTab('notes')">
-                <span> 📝 </span> <span>Notizen</span>
-            </button>
+           <button class="sidebar-btn" onclick="switchTab('eisenhower')">
+    <span> 📊 </span> <span>Eisenhower</span>
+</button>
+<button class="sidebar-btn" onclick="switchTab('archive')">
+    <span> 📦 </span> <span>Archiv</span>
+</button>
+<button class="sidebar-btn" onclick="switchTab('stats')">
+    <span> 📈 </span> <span>Statistik</span>
+</button>
                         <button class="sidebar-btn" onclick="switchTab('settings')">
                 <span> ⚙️ </span> <span>Settings</span>
             </button>
@@ -1630,23 +2346,41 @@ margin-bottom: 8px; /* Mehr Abstand zwischen den Buttons! */
                 <div class="progress-fill" id="todoProgress" style="width: 0%">0%</div>
             </div>
 
-            <div class="filter-dropdown">
-                <button class="filter-btn" onclick="toggleFilter()">
-                    <span id="filterText">Alle Aufgaben</span>
-                    <span>▼</span>
-                </button>
-                <div class="filter-menu" id="filterMenu">
-                    <div class="filter-option" onclick="filterTodos('alle')">Alle Aufgaben</div>
-                    <div class="filter-option" onclick="filterTodos('schule')">📚 Schule</div>
-                    <div class="filter-option" onclick="filterTodos('freizeit')">🌸 Freizeit</div>
-                    <div class="filter-option" onclick="filterTodos('haushalt')">🏠 Haushalt</div>
-                    <div class="filter-option" onclick="filterTodos('sonstiges')">✨ Sonstiges</div>
-                    <div class="filter-option" onclick="filterTodos('high')">⭐⭐⭐ Hohe Priorität</div>
-                    <div class="filter-option" onclick="filterTodos('medium')">⭐⭐ Mittlere Priorität</div>
-                    <div class="filter-option" onclick="filterTodos('low')">⭐ Niedrige Priorität</div>
-                </div>
-            </div>
-
+           <div class="filter-dropdown">
+    <button class="filter-btn" onclick="toggleFilter()">
+        <span id="filterText">Filter wählen</span>
+        <span id="filterBadge" style="background: var(--accent); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.9em; margin-left: 8px; display: none;"></span>
+        <span>▼</span>
+    </button>
+    <div class="filter-menu" id="filterMenu">
+        <div class="filter-option" data-filter="alle" onclick="toggleMultiFilter('alle')">
+            <span class="filter-checkbox">☐</span> Alle Aufgaben
+        </div>
+        <div style="border-top: 2px solid #fce4ec; margin: 8px 0;"></div>
+        <div class="filter-option" data-filter="schule" onclick="toggleMultiFilter('schule')">
+            <span class="filter-checkbox">☐</span> 📚 Schule
+        </div>
+        <div class="filter-option" data-filter="freizeit" onclick="toggleMultiFilter('freizeit')">
+            <span class="filter-checkbox">☐</span> 🌸 Freizeit
+        </div>
+        <div class="filter-option" data-filter="haushalt" onclick="toggleMultiFilter('haushalt')">
+            <span class="filter-checkbox">☐</span> 🏠 Haushalt
+        </div>
+        <div class="filter-option" data-filter="sonstiges" onclick="toggleMultiFilter('sonstiges')">
+            <span class="filter-checkbox">☐</span> ✨ Sonstiges
+        </div>
+        <div style="border-top: 2px solid #fce4ec; margin: 8px 0;"></div>
+        <div class="filter-option" data-filter="high" onclick="toggleMultiFilter('high')">
+            <span class="filter-checkbox">☐</span> ⭐⭐⭐ Hohe Priorität
+        </div>
+        <div class="filter-option" data-filter="medium" onclick="toggleMultiFilter('medium')">
+            <span class="filter-checkbox">☐</span> ⭐⭐ Mittlere Priorität
+        </div>
+        <div class="filter-option" data-filter="low" onclick="toggleMultiFilter('low')">
+            <span class="filter-checkbox">☐</span> ⭐ Niedrige Priorität
+        </div>
+    </div>
+</div>
             <div class="category-btns">
                 <button class="cat-btn" style="border-color: var(--schule); color: var(--schule)" onclick="addTodo('schule')">+ 📚 Schule</button>
                 <button class="cat-btn" style="border-color: var(--freizeit); color: var(--freizeit)" onclick="addTodo('freizeit')">+ 🌸 Freizeit</button>
@@ -1658,7 +2392,6 @@ margin-bottom: 8px; /* Mehr Abstand zwischen den Buttons! */
                 <div id="todoList"></div>
             </div>
         </div>
-
         <!-- KALENDER -->
         <div id="calendar" class="tab-content">
             <h2 class="section-title">Kalender</h2>
@@ -1799,13 +2532,97 @@ margin-bottom: 8px; /* Mehr Abstand zwischen den Buttons! */
 
   <div id="notesCarousel" class="notes-carousel"></div>
 </div>
+<!-- STATISTIK -->
+<div id="stats" class="tab-content">
+    <h2 class="section-title">Statistiken</h2>
+    
+    <div class="stats-grid" style="margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="stat-value" id="totalTodos">0</div>
+            <div class="stat-label">Aufgaben gesamt</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="completedTodos">0</div>
+            <div class="stat-label">Erledigt</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="completionRate">0%</div>
+            <div class="stat-label">Erfolgsquote</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="currentStreak">0</div>
+            <div class="stat-label">Streak (Tage)</div>
+        </div>
+    </div>
+    
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 3px solid var(--accent);">
+        <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin-bottom: 15px;">
+            📊 Produktivität (letzte 7 Tage)
+        </h3>
+        <canvas id="productivityChart" height="80"></canvas>
+    </div>
+</div>
+<!-- ARCHIV -->
+<div id="archive" class="tab-content">
+    <h2 class="section-title">Archiv</h2>
+    
+    <div style="margin-bottom: 20px;">
+        <button onclick="clearArchive()" style="background: #ff6b6b; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-family: 'Patrick Hand', cursive; font-size: 1.1em;">
+            🗑️ Archiv leeren
+        </button>
+    </div>
+    
+    <div id="archiveList" style="display: grid; gap: 10px;"></div>
+</div>
+<!-- EISENHOWER MATRIX -->
+<div id="eisenhower" class="tab-content">
+    <h2 class="section-title">Eisenhower Matrix</h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+        <!-- Wichtig & Dringend -->
+        <div style="border: 3px solid #ff6b6b; border-radius: 8px; padding: 15px; background: #fff5f5;">
+            <h3 style="color: #ff6b6b; font-family: 'Caveat', cursive; font-size: 1.6em; margin-bottom: 10px;">
+                🚨 Wichtig & Dringend
+            </h3>
+            <div id="matrix-urgent-important"></div>
+        </div>
 
+        <!-- Wichtig & Nicht dringend -->
+        <div style="border: 3px solid #51cf66; border-radius: 8px; padding: 15px; background: #f0fff4;">
+            <h3 style="color: #51cf66; font-family: 'Caveat', cursive; font-size: 1.6em; margin-bottom: 10px;">
+                ⭐ Wichtig & Nicht dringend
+            </h3>
+            <div id="matrix-not-urgent-important"></div>
+        </div>
 
+        <!-- Nicht wichtig & Dringend -->
+        <div style="border: 3px solid #ffd43b; border-radius: 8px; padding: 15px; background: #fffef0;">
+            <h3 style="color: #ffa500; font-family: 'Caveat', cursive; font-size: 1.6em; margin-bottom: 10px;">
+                ⚡ Nicht wichtig & Dringend
+            </h3>
+            <div id="matrix-urgent-not-important"></div>
+        </div>
 
+        <!-- Nicht wichtig & Nicht dringend -->
+        <div style="border: 3px solid #adb5bd; border-radius: 8px; padding: 15px; background: #f8f9fa;">
+            <h3 style="color: #868e96; font-family: 'Caveat', cursive; font-size: 1.6em; margin-bottom: 10px;">
+                💤 Nicht wichtig & Nicht dringend
+            </h3>
+            <div id="matrix-not-urgent-not-important"></div>
+        </div>
+    </div>
+</div>
         <!-- EINSTELLUNGEN -->
         <div id="settings" class="tab-content">
             <h2 class="section-title">Einstellungen</h2>
-            
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #fef9fb; border-radius: 8px; margin-bottom: 20px; border: 2px solid var(--accent);">
+    <span style="font-family: 'Caveat', cursive; font-size: 1.6em; color: var(--primary);">🌙 Dark Mode</span>
+    <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
+        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" style="opacity: 0; width: 0; height: 0;">
+        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; transition: 0.4s; border-radius: 34px;"></span>
+        <span style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background: white; transition: 0.4s; border-radius: 50%;"></span>
+    </label>
+</div>
             <h3 style="font-family: 'Caveat', cursive; font-size: 1.8em; color: var(--primary); margin-bottom: 10px;">Themes</h3>
             <div class="theme-grid">
                 <div class="theme-option active" style="background: linear-gradient(135deg, #d4869c, #f4b5c5)" onclick="setTheme('pink')"></div>
@@ -1908,6 +2725,15 @@ updateDateTime();
 
         const data = {
             todos: {},
+ holidays: [
+        { start: '2025-12-22', end: '2026-01-05', name: 'Weihnachtsferien' },
+        { start: '2026-02-16', end: '2026-02-20', name: 'Winterferien' },
+        { start: '2026-04-06', end: '2026-04-18', name: 'Osterferien' },
+        { start: '2026-05-26', end: '2026-06-05', name: 'Pfingstferien' },
+        { start: '2026-08-01', end: '2026-09-14', name: 'Sommerferien' },
+        { start: '2026-11-02', end: '2026-11-06', name: 'Herbstferien' }
+    ],
+archive: [],
             daySchedule: {},
             stundenplan: { Montag: {}, Dienstag: {}, Mittwoch: {}, Donnerstag: {}, Freitag: {} },
             exams: [],
@@ -1922,7 +2748,7 @@ updateDateTime();
 
         let currentDate = new Date();
         let currentCalView = 'day';
-        let currentFilter = 'alle';
+       let activeFilters = ['alle']; // Array für mehrere Filter
         let selectedDate = null;
         let timerInterval = null;
         let timerSeconds = 1500;
@@ -1940,13 +2766,19 @@ updateDateTime();
         ];
 
         function loadData() {
-            const saved = localStorage.getItem('ayasPlanner');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.assign(data, parsed);
-                applyTheme(data.theme);
-                applyCategoryColors();
-            }
+    const saved = localStorage.getItem('ayasPlanner');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.assign(data, parsed);
+        applyTheme(data.theme);
+        applyCategoryColors();
+        
+        // Dark Mode anwenden
+        if (data.darkMode) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('darkModeToggle').checked = true;
+        }
+    }
 // Falls Datenfelder noch nicht existieren → erstellen
 if (!data.notes) data.notes = [];
 if (!data.todos) data.todos = [];
@@ -1956,7 +2788,6 @@ if (!data.exams) data.exams = [];
 if (!data.habits) data.habits = [];
 if (!data.categoryColors) data.categoryColors = {};
 
-if (!data.notes) data.notes = [];
         }
 
         let saveTimeout;
@@ -1991,7 +2822,15 @@ function saveData() {
     tabElement.classList.remove("fade-in"); 
     void tabElement.offsetWidth;
     tabElement.classList.add("fade-in");
-
+if (tabId === 'eisenhower') {
+    renderEisenhower();
+}
+if (tabId === 'archive') {
+    renderArchive();
+}
+if (tabId === 'stats') {
+    renderStats();
+}
     // BUGFIX: Inhalte rendern, wenn der Tab gewechselt wird
     if (tabId === 'school') {
         // HIER MUSS DER AUFRUF HIN
@@ -2029,6 +2868,17 @@ function switchSchoolView(viewId, btnEl = null) {
         if (match) match.classList.add('active');
     }
 }
+function toggleDarkMode() {
+    const isDark = document.getElementById('darkModeToggle').checked;
+    document.body.classList.toggle('dark-mode', isDark);
+    data.darkMode = isDark;
+    saveData();
+    
+    // NEU: Chart neu rendern
+    if (document.getElementById('stats').classList.contains('active')) {
+        renderProductivityChart();
+    }
+}
 function loadDailyQuote() {
     const quotes = [
         "Du schaffst das, Aya.",
@@ -2060,31 +2910,74 @@ function loadDailyQuote() {
 
 loadDailyQuote();
 
-        function toggleFilter() {
-            document.getElementById('filterMenu').classList.toggle('active');
-        }
+       function toggleFilter() {
+    document.getElementById('filterMenu').classList.toggle('active');
+}
 
-        function filterTodos(filter) {
-            currentFilter = filter;
-            const texts = {
-                alle: 'Alle Aufgaben',
-                schule: '📚 Schule',
-                freizeit: '🌸 Freizeit',
-                haushalt: '🏠 Haushalt',
-                sonstiges: '✨ Sonstiges',
-                high: '⭐⭐⭐ Hohe Priorität',
-                medium: '⭐⭐ Mittlere Priorität',
-                low: '⭐ Niedrige Priorität'
-            };
-            document.getElementById('filterText').textContent = texts[filter];
-            document.getElementById('filterMenu').classList.remove('active');
-            renderTodos();
+function toggleMultiFilter(filter) {
+    // "Alle" deaktiviert andere Filter
+    if (filter === 'alle') {
+        activeFilters = ['alle'];
+    } else {
+        // "Alle" entfernen wenn anderer Filter gewählt
+        activeFilters = activeFilters.filter(f => f !== 'alle');
+        
+        // Filter hinzufügen oder entfernen
+        if (activeFilters.includes(filter)) {
+            activeFilters = activeFilters.filter(f => f !== filter);
+        } else {
+            activeFilters.push(filter);
         }
+        
+        // Falls leer, zurück zu "Alle"
+        if (activeFilters.length === 0) {
+            activeFilters = ['alle'];
+        }
+    }
+    
+    updateFilterUI();
+    renderTodos();
+}
 
+function updateFilterUI() {
+    const badge = document.getElementById('filterBadge');
+    const filterText = document.getElementById('filterText');
+    
+    // Checkboxen aktualisieren
+    document.querySelectorAll('.filter-option').forEach(opt => {
+        const filter = opt.getAttribute('data-filter');
+        const checkbox = opt.querySelector('.filter-checkbox');
+        
+        if (activeFilters.includes(filter)) {
+            opt.classList.add('active');
+            if (checkbox) checkbox.textContent = '☑';
+        } else {
+            opt.classList.remove('active');
+            if (checkbox) checkbox.textContent = '☐';
+        }
+    });
+    
+    // Badge anzeigen
+    if (activeFilters.length === 1 && activeFilters[0] === 'alle') {
+        badge.style.display = 'none';
+        filterText.textContent = 'Filter wählen';
+    } else {
+        badge.style.display = 'inline-block';
+        badge.textContent = activeFilters.length + ' aktiv';
+        filterText.textContent = 'Filter wählen';
+    }
+}
         function addTodo(category) {
             const today = getDateKey();
             if (!data.todos[today]) data.todos[today] = [];
-            data.todos[today].push({ text: '', done: false, category, priority: 'medium', deadline: '' });
+            data.todos[today].push({ 
+    text: '', 
+    done: false, 
+    category, 
+    priority: 'medium', 
+    deadline: '',
+    tags: [] // NEU
+});
             saveData();
             renderTodos();
             setTimeout(() => {
@@ -2095,7 +2988,14 @@ loadDailyQuote();
 
         function addModalTodo(category) {
             if (!data.todos[selectedDate]) data.todos[selectedDate] = [];
-            data.todos[selectedDate].push({ text: '', done: false, category, priority: 'medium', deadline: '' });
+           data.todos[selectedDate].push({ 
+    text: '', 
+    done: false, 
+    category, 
+    priority: 'medium', 
+    deadline: '',
+    tags: [] // NEU
+});
             saveData();
             renderModalTodos();
             renderMonth();
@@ -2108,34 +3008,70 @@ loadDailyQuote();
 
             if (!data.todos[today]) data.todos[today] = [];
 
-            let filtered = data.todos[today];
-            if (currentFilter !== 'alle') {
-                if (['schule', 'freizeit', 'haushalt', 'sonstiges'].includes(currentFilter)) {
-                    filtered = filtered.filter(t => t.category === currentFilter);
-                } else {
-                    filtered = filtered.filter(t => t.priority === currentFilter);
-                }
-            }
+           let filtered = data.todos[today];
 
+// Multi-Filter anwenden
+if (!activeFilters.includes('alle')) {
+    filtered = filtered.filter(todo => {
+        // Kategorien filtern
+        const categoryMatch = activeFilters.some(f => 
+            ['schule', 'freizeit', 'haushalt', 'sonstiges'].includes(f) && todo.category === f
+        );
+        
+        // Prioritäten filtern
+        const priorityMatch = activeFilters.some(f => 
+            ['high', 'medium', 'low'].includes(f) && todo.priority === f
+        );
+        
+        // Wenn nur Kategorien gewählt: Kategorie muss matchen
+        const hasCategory = activeFilters.some(f => ['schule', 'freizeit', 'haushalt', 'sonstiges'].includes(f));
+        const hasPriority = activeFilters.some(f => ['high', 'medium', 'low'].includes(f));
+        
+        if (hasCategory && hasPriority) {
+            // Beide Filter-Typen aktiv: ODER-Verknüpfung
+            return categoryMatch || priorityMatch;
+        } else if (hasCategory) {
+            return categoryMatch;
+        } else if (hasPriority) {
+            return priorityMatch;
+        }
+        
+        return true;
+    });
+}
             filtered.forEach((todo, i) => {
                 const realIndex = data.todos[today].indexOf(todo);
-                const item = document.createElement('div');
-                item.className = 'todo-item';
+// Überfällig checken
+const isOverdue = todo.deadline && new Date(todo.deadline) < new Date() && !todo.done;                
+const item = document.createElement('div');
+                item.className = 'todo-item' + (isOverdue ? ' overdue' : '');
                 item.style.borderLeftColor = `var(--${todo.category})`;
-               item.innerHTML = `
+              // Tags vorbereiten
+const tagsHTML = (todo.tags || []).map(tag => 
+    `<span class="todo-tag" onclick="removeTag('${today}', ${realIndex}, '${tag}')">
+        #${tag} <span class="todo-tag-remove">×</span>
+    </span>`
+).join('');
+
+item.innerHTML = `
     <div class="todo-row">
         <input type="checkbox" class="todo-checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${today}', ${realIndex})">
         <input type="text" class="todo-input" value="${todo.text}" oninput="updateTodo('${today}', ${realIndex}, this.value)" onkeydown="if(event.key==='Enter') focusNext(this)" placeholder="Aufgabe...">
-        <button class="delete-btn" onclick="deleteTodo('${today}', ${realIndex})" style="width: 30px; height: 30px; font-size: 1.1em;">×</button>
+        <button class="delete-btn" onclick="archiveTodo('${today}', ${realIndex})" style="width: 40px; height: 40px; font-size: 1.1em; background: #51cf66;" title="Archivieren">📦</button>
+        <button class="delete-btn" onclick="deleteTodo('${today}', ${realIndex})" style="width: 40px; height: 40px; font-size: 1.1em;">×</button>
     </div>
     <div class="todo-controls">
+        <input type="date" class="todo-deadline" value="${todo.deadline || ''}" onchange="updateDeadline('${today}', ${realIndex}, this.value)">
         <select class="priority-select" onchange="updatePriority('${today}', ${realIndex}, this.value)">
             <option value="low" ${todo.priority === 'low' ? 'selected' : ''}>⭐</option>
             <option value="medium" ${todo.priority === 'medium' ? 'selected' : ''}>⭐⭐</option>
             <option value="high" ${todo.priority === 'high' ? 'selected' : ''}>⭐⭐⭐</option>
         </select>
     </div>
-                `;
+    <div class="todo-tags-container">${tagsHTML}</div>
+    <input type="text" class="todo-tag-input" placeholder="Tag hinzufügen (Enter drücken)..." 
+        onkeydown="if(event.key==='Enter') addTag('${today}', ${realIndex}, this)">
+`;
                 list.appendChild(item);
             });
 
@@ -2145,6 +3081,31 @@ loadDailyQuote();
 
             updateProgress();
             updateNextExam();
+// Drag & Drop initialisieren
+    setTimeout(() => {
+        const todoList = document.getElementById('todoList');
+        if (todoList && !todoList.sortableInstance) {
+            todoList.sortableInstance = new Sortable(todoList, {
+                animation: 200,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                handle: '.todo-item', // Gesamtes Item ist draggable
+                filter: '.todo-checkbox, .todo-input, .delete-btn, .priority-select, .todo-deadline',
+                preventOnFilter: false,
+                onEnd: function(evt) {
+                    const today = getDateKey();
+                    const todos = data.todos[today];
+                    
+                    // Item verschieben
+                    const movedTodo = todos.splice(evt.oldIndex, 1)[0];
+                    todos.splice(evt.newIndex, 0, movedTodo);
+                    
+                    saveData();
+                    console.log('✅ Todo verschoben:', movedTodo.text);
+                }
+            });
+        }
+    }, 100);
         }
 
         function renderModalTodos() {
@@ -2224,7 +3185,62 @@ function getHabitsForDate(date) {
                 saveData();
             }
         }
+function archiveTodo(date, index) {
+    if (data.todos[date] && data.todos[date][index]) {
+        const todo = data.todos[date][index];
+        data.archive.push({
+            ...todo,
+            archivedDate: new Date().toISOString(),
+            originalDate: date
+        });
+        data.todos[date].splice(index, 1);
+        saveData();
+        renderTodos();
+        renderMonth();
+    }
+}
 
+function renderArchive() {
+    const list = document.getElementById('archiveList');
+    list.innerHTML = '';
+    
+    if (data.archive.length === 0) {
+        list.innerHTML = '<div style="text-align: center; color: #dbb5c3; padding: 20px;">Kein Archiv</div>';
+        return;
+    }
+    
+    data.archive.slice().reverse().forEach((todo, i) => {
+        const realIndex = data.archive.length - 1 - i;
+        const item = document.createElement('div');
+        item.style.cssText = `padding: 15px; background: #f8f9fa; border-left: 5px solid var(--${todo.category}); border-radius: 5px; opacity: 0.7;`;
+        item.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 600;">${todo.text}</div>
+                    <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                        Archiviert: ${new Date(todo.archivedDate).toLocaleDateString('de-DE')}
+                    </div>
+                </div>
+                <button class="delete-btn" onclick="deleteFromArchive(${realIndex})">×</button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function clearArchive() {
+    if (confirm('Archiv wirklich komplett leeren?')) {
+        data.archive = [];
+        saveData();
+        renderArchive();
+    }
+}
+
+function deleteFromArchive(index) {
+    data.archive.splice(index, 1);
+    saveData();
+    renderArchive();
+}
         function deleteTodo(date, index) {
             if (data.todos[date]) {
                 data.todos[date].splice(index, 1);
@@ -2233,7 +3249,121 @@ function getHabitsForDate(date) {
                 renderMonth();
             }
         }
+function renderStats() {
+    // Zähler berechnen
+    let totalTodos = 0;
+    let completedTodos = 0;
+    
+    Object.keys(data.todos).forEach(date => {
+        totalTodos += data.todos[date].length;
+        completedTodos += data.todos[date].filter(t => t.done).length;
+    });
+    
+    const completionRate = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
+    
+    document.getElementById('totalTodos').textContent = totalTodos;
+    document.getElementById('completedTodos').textContent = completedTodos;
+    document.getElementById('completionRate').textContent = completionRate + '%';
+    document.getElementById('currentStreak').textContent = data.streak || 0;
+    
+    // Chart erstellen
+    renderProductivityChart();
+}
 
+function renderProductivityChart() {
+    const ctx = document.getElementById('productivityChart');
+    
+    // Letzte 7 Tage
+    const labels = [];
+    const completedData = [];
+    const totalData = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateKey = getDateKey(date);
+        
+        labels.push(date.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' }));
+        
+        const todos = data.todos[dateKey] || [];
+        totalData.push(todos.length);
+        completedData.push(todos.filter(t => t.done).length);
+    }
+    
+    // Altes Chart zerstören
+    if (window.productivityChart) {
+        window.productivityChart.destroy();
+    }
+    
+    window.productivityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Erledigt',
+                    data: completedData,
+                    borderColor: 'rgb(212, 134, 156)',
+                    backgroundColor: 'rgba(212, 134, 156, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Gesamt',
+                    data: totalData,
+                    borderColor: 'rgb(244, 181, 197)',
+                    backgroundColor: 'rgba(244, 181, 197, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+       options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: 'Patrick Hand',
+                            size: 14
+                        },
+                        color: document.body.classList.contains('dark-mode') ? '#eee' : '#333'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            family: 'Patrick Hand'
+                        },
+                        color: document.body.classList.contains('dark-mode') ? '#eee' : '#666'
+                    },
+                    grid: {
+                        color: document.body.classList.contains('dark-mode') ? '#333' : '#e0e0e0'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            family: 'Patrick Hand'
+                        },
+                        color: document.body.classList.contains('dark-mode') ? '#eee' : '#666'
+                    },
+                    grid: {
+                        color: document.body.classList.contains('dark-mode') ? '#333' : '#e0e0e0'
+                    }
+                }
+            }
+        }
+        
+    });
+}
         function updateProgress() {
             const today = getDateKey();
             const todos = data.todos[today] || [];
@@ -2331,77 +3461,88 @@ function switchCalView(view, btnEl = null) {
 
       
         function renderMonth() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-            document.getElementById('monthTitle').textContent = `${months[month]} ${year}`;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    document.getElementById('monthTitle').textContent = `${months[month]} ${year}`;
 
-            const grid = document.getElementById('monthGrid');
-            grid.innerHTML = '';
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
 
-            ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].forEach(d => {
-                const h = document.createElement('div');
-                h.className = 'cal-header';
-                h.textContent = d;
-                grid.appendChild(h);
-            });
-
-            const prevMonthDays = new Date(year, month, 0).getDate();
-            for (let i = adjustedFirstDay - 1; i >= 0; i--) {
-                const d = document.createElement('div');
-                d.className = 'cal-day other-month';
-                d.innerHTML = `<div class="day-num">${prevMonthDays - i}</div>`;
-                grid.appendChild(d);
-            }
-
-            const today = new Date();
-            for (let i = 1; i <= daysInMonth; i++) {
-                const date = new Date(year, month, i);
-                const dateKey = getDateKey(date);
-                const d = document.createElement('div');
-                d.className = 'cal-day';
-                d.onclick = () => openModal(dateKey);
-
-                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                    d.classList.add('today');
-                }
-
-               const habitsForDay = getHabitsForDate(date);
-if (data.todos[dateKey]?.length || habitsForDay.length > 0) {
-    d.classList.add('has-todos');
-}
-
-                const exams = data.exams.filter(e => e.date === dateKey && e.subject);
-let content = `<div class="day-num">${i}</div>`;
-if (exams.length > 0) {
-    exams.forEach(exam => {
-        content += `<div class="exam-label">${exam.subject}</div>`;
+    ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'cal-header';
+        h.textContent = d;
+        grid.appendChild(h);
     });
-}
-console.log('Habits für Tag ' + i + ':', habitsForDay.length, habitsForDay);
-// Habit-Dots hinzufügen
-if (habitsForDay.length > 0) {
-    content += '<div class="habit-dots">';
-    habitsForDay.forEach(habit => {
-        const habitColors = ['#ff6b9d', '#c44569', '#ffa502', '#ff6348', '#1e90ff', '#2ed573', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7'];
-        const habitIndex = data.habits.indexOf(habit);
-        const color = habitColors[habitIndex % habitColors.length];
-        content += `<div class="todo-dot" style="background: ${color};"></div>`;
-    });
-    content += '</div>';
-}
-                                d.innerHTML = content;
-                grid.appendChild(d);
-            }
 
-           // Keine Tage des nächsten Monats anzeigen
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    for (let i = adjustedFirstDay - 1; i >= 0; i--) {
+        const d = document.createElement('div');
+        d.className = 'cal-day other-month';
+        d.innerHTML = `<div class="day-num">${prevMonthDays - i}</div>`;
+        grid.appendChild(d);
+    }
+
+    const today = new Date();
+    for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(year, month, i, 12, 0, 0); 
+        const dateKey = getDateKey(date);
+        const d = document.createElement('div');
+        d.className = 'cal-day';
+        d.onclick = () => openModal(dateKey);
+
+        if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+            d.classList.add('today');
         }
 
-       // Im Code-Ausschnitt, der mit 'function openModal(dateKey)' beginnt:
+        const habitsForDay = getHabitsForDate(date);
+        if (data.todos[dateKey]?.length || habitsForDay.length > 0) {
+            d.classList.add('has-todos');
+        }
+
+// Tag-Nummer
+let content = `<div class="day-num">${i}</div>`;
+
+// TOP-BEREICH: Klausuren + Habits
+content += `<div class="cal-day-top">`;
+
+// 📋 PRIORITÄT 1: KLAUSUREN
+const exams = data.exams.filter(e => e.date === dateKey && e.subject);
+if (exams.length > 0) {
+    exams.forEach(exam => {
+        content += `<div class="exam-label">📝 ${exam.subject}</div>`;
+    });
+}
+
+// ✨ PRIORITÄT 2: GEWOHNHEITEN
+if (habitsForDay.length > 0) {
+    content += `<div class="habit-label">✨ ${habitsForDay[0].name}</div>`;
+    if (habitsForDay.length > 1) {
+        content += `<div class="habit-label" style="font-size: 0.62em; opacity: 0.8;">+${habitsForDay.length - 1} mehr</div>`;
+    }
+}
+
+content += `</div>`; // Ende cal-day-top
+
+// BOTTOM-BEREICH: Ferien (immer ganz unten)
+content += `<div class="cal-day-bottom">`;
+
+const holiday = data.holidays.find(h => dateKey >= h.start && dateKey <= h.end);
+if (holiday) {
+    content += `<div class="holiday-label">🏖️ ${holiday.name}</div>`;
+}
+
+content += `</div>`; // Ende cal-day-bottom
+
+d.innerHTML = content;
+        grid.appendChild(d);
+    }
+}
 
 function openModal(dateKey) {
     selectedDate = dateKey;
@@ -2413,9 +3554,7 @@ function openModal(dateKey) {
     const day = parseInt(parts[2]);
     const date = new Date(year, month, day);
     
-    // BUGFIX: +1 Tag hinzufügen weil alles um einen Tag verschoben ist
-    date.setDate(date.getDate() + 1);
-
+   
     const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
     const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
     
@@ -2519,9 +3658,7 @@ function renderModalHabits() {
     const day = parseInt(parts[2]);
     const date = new Date(year, month, day);
     
-    // BUGFIX: +1 Tag hinzufügen
-    date.setDate(date.getDate() + 1);
-    
+       
     const habitsForDay = getHabitsForDate(date);
 
     if (habitsForDay.length === 0) {
@@ -2926,7 +4063,12 @@ saveData(); // Auto-Save Integration
             document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
             event.target.classList.add('active');
         }
-
+function toggleDarkMode() {
+    const isDark = document.getElementById('darkModeToggle').checked;
+    document.body.classList.toggle('dark-mode', isDark);
+    data.darkMode = isDark;
+    saveData();
+}
         function applyTheme(theme) {
             const themes = {
                 pink: { primary: '#d4869c', accent: '#f4b5c5' },
@@ -2974,24 +4116,7 @@ saveData(); // Auto-Save Integration
             }
         }
 
-        function updateDateTime() {
-            const now = new Date();
-            
-            const dayNames = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-            document.getElementById('currentDay').textContent = dayNames[now.getDay()];
-            
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('de-DE', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            });
-            
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
+     
         const moods = ['😊', '😃', '😢', '🤩', '😴', '😎', '🥳', '😌'];
         
         function renderMoodSelector() {
@@ -3038,11 +4163,11 @@ saveData(); // Auto-Save Integration
             renderMonth();
         }
 
-        // INIT
-       // INIT
+  // INIT
 loadData();
 renderMoodSelector();
 renderTodos();
+initSwipeGestures();
 renderMonth();
 renderStundenplan();
 renderExams();
@@ -3066,6 +4191,38 @@ window.addEventListener('scroll', () => {
 updateDateTime();
 // Jede Sekunde aktualisieren
 setInterval(updateDateTime, 1000);
+function renderEisenhower() {
+    const today = getDateKey();
+    const todos = data.todos[today] || [];
+    
+    // Kategorien leeren
+    document.getElementById('matrix-urgent-important').innerHTML = '';
+    document.getElementById('matrix-not-urgent-important').innerHTML = '';
+    document.getElementById('matrix-urgent-not-important').innerHTML = '';
+    document.getElementById('matrix-not-urgent-not-important').innerHTML = '';
+    
+    todos.forEach((todo, index) => {
+        const isUrgent = todo.deadline && new Date(todo.deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+        const isImportant = todo.priority === 'high';
+        
+        const item = document.createElement('div');
+        item.style.cssText = 'padding: 10px; background: white; border-radius: 5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;';
+        item.innerHTML = `
+            <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${today}', ${index}); renderEisenhower();">
+            <span style="flex: 1; ${todo.done ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${todo.text || 'Ohne Titel'}</span>
+        `;
+        
+        if (isUrgent && isImportant) {
+            document.getElementById('matrix-urgent-important').appendChild(item);
+        } else if (!isUrgent && isImportant) {
+            document.getElementById('matrix-not-urgent-important').appendChild(item);
+        } else if (isUrgent && !isImportant) {
+            document.getElementById('matrix-urgent-not-important').appendChild(item);
+        } else {
+            document.getElementById('matrix-not-urgent-not-important').appendChild(item);
+        }
+    });
+}
 function renderNotes() {
     const carousel = document.getElementById("notesCarousel");
     carousel.innerHTML = "";
@@ -3093,6 +4250,33 @@ function renderNotes() {
     addBtn.onclick = addNote;
     carousel.appendChild(addBtn);
 }
+// Touch-Swipe für Notizen-Carousel
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const carousel = document.getElementById('notesCarousel');
+    
+    carousel.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    carousel.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+    
+    function handleSwipe() {
+        if (touchEndX < touchStartX - 50) {
+            // Swipe left
+            carousel.scrollBy({ left: 320, behavior: 'smooth' });
+        }
+        if (touchEndX > touchStartX + 50) {
+            // Swipe right
+            carousel.scrollBy({ left: -320, behavior: 'smooth' });
+        }
+    }
+});
 function addNote() {
     const now = new Date();
     const date = now.toLocaleDateString("de-DE");
@@ -3123,15 +4307,132 @@ function updateNote(index, value) {
     data.notes[index].text = value;
     saveData();
 }
+/* ========================================
+   SWIPE GESTURES FÜR TO-DOS
+   ======================================== */
+
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeElement = null;
+const swipeThreshold = 100; // Mindest-Swipe-Distanz in Pixeln
+
+function initSwipeGestures() {
+    const todoList = document.getElementById('todoList');
+    if (!todoList) return;
+    
+    // Touch Start
+    todoList.addEventListener('touchstart', (e) => {
+        const item = e.target.closest('.todo-item');
+        if (!item) return;
+        
+        // Nicht swipen wenn Input/Button gedrückt
+        if (e.target.matches('input, select, button, textarea')) {
+            return;
+        }
+        
+        swipeElement = item;
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+        swipeElement.classList.add('swiping');
+    });
+    
+    // Touch Move
+    todoList.addEventListener('touchmove', (e) => {
+        if (!swipeElement) return;
+        
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const diffX = currentX - swipeStartX;
+        const diffY = currentY - swipeStartY;
+        
+        // Nur horizontal swipen (nicht scrollen)
+        if (Math.abs(diffY) > Math.abs(diffX)) {
+            return;
+        }
+        
+        // Scrollen verhindern beim horizontalen Swipe
+        if (Math.abs(diffX) > 10) {
+            e.preventDefault();
+        }
+        
+        // Visuelles Feedback
+        swipeElement.style.transform = `translateX(${diffX}px)`;
+        
+        if (diffX < -30) {
+            // Links = Löschen (Rot)
+            swipeElement.classList.add('show-left-action');
+            swipeElement.classList.remove('show-right-action');
+        } else if (diffX > 30) {
+            // Rechts = Erledigt (Grün)
+            swipeElement.classList.add('show-right-action');
+            swipeElement.classList.remove('show-left-action');
+        } else {
+            swipeElement.classList.remove('show-left-action', 'show-right-action');
+        }
+    }, { passive: false });
+    
+    // Touch End
+    todoList.addEventListener('touchend', (e) => {
+        if (!swipeElement) return;
+        
+        const currentX = e.changedTouches[0].clientX;
+        const diffX = currentX - swipeStartX;
+        
+        swipeElement.classList.remove('swiping', 'show-left-action', 'show-right-action');
+        
+        const today = getDateKey();
+        const index = Array.from(todoList.children).indexOf(swipeElement);
+        
+        // Swipe Links = Löschen
+        if (diffX < -swipeThreshold) {
+            swipeElement.classList.add('swipe-left');
+            
+            setTimeout(() => {
+                deleteTodo(today, index);
+            }, 300);
+        }
+        // Swipe Rechts = Toggle Erledigt
+        else if (diffX > swipeThreshold) {
+            swipeElement.classList.add('swipe-right');
+            
+            setTimeout(() => {
+                toggleTodo(today, index);
+                swipeElement.classList.remove('swipe-right');
+                swipeElement.style.transform = '';
+                renderTodos();
+            }, 300);
+        }
+        // Zurück zur Ausgangsposition
+        else {
+            swipeElement.style.transform = '';
+        }
+        
+        swipeElement = null;
+    });
+    
+    // Touch Cancel
+    todoList.addEventListener('touchcancel', () => {
+        if (swipeElement) {
+            swipeElement.classList.remove('swiping', 'show-left-action', 'show-right-action');
+            swipeElement.style.transform = '';
+            swipeElement = null;
+        }
+    });
+}
 // Sidebar Toggle für Mobile
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
-    const content = document.querySelector('.content-wrapper');
-    sidebar.classList.toggle('active');
-    content.classList.toggle('shifted');
-}
-
-// Sidebar schließen wenn außerhalb geklickt (nur Mobile)
+    const wrapper = document.querySelector('.content-wrapper');
+    
+    // Prüfen, ob wir auf Desktop sind (Breite > 768px)
+    if (window.innerWidth > 768) {
+        sidebar.classList.toggle('collapsed');
+        wrapper.classList.toggle('shifted');
+    } else {
+        // Auf Mobile nutzen wir die 'active' Klasse zum Reinfahren
+        sidebar.classList.toggle('active');
+    }
+}// Sidebar schließen wenn außerhalb geklickt (nur Mobile)
 document.addEventListener('click', (e) => {
     if (window.innerWidth <= 768) {
         const sidebar = document.querySelector('.sidebar');
@@ -3143,7 +4444,42 @@ document.addEventListener('click', (e) => {
         }
     }
 });
+/* ========================================
+   TAGS MANAGEMENT
+   ======================================== */
 
+function addTag(date, index, inputElement) {
+    const tagText = inputElement.value.trim().toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
+    
+    if (!tagText) return;
+    
+    if (!data.todos[date][index].tags) {
+        data.todos[date][index].tags = [];
+    }
+    
+    // Duplikate vermeiden
+    if (!data.todos[date][index].tags.includes(tagText)) {
+        data.todos[date][index].tags.push(tagText);
+        saveData();
+        renderTodos();
+    }
+    
+    inputElement.value = '';
+}
+
+function removeTag(date, index, tag) {
+    if (data.todos[date][index].tags) {
+        data.todos[date][index].tags = data.todos[date][index].tags.filter(t => t !== tag);
+        saveData();
+        renderTodos();
+    }
+}
+
+function filterByTag(tag) {
+    // Optional: Filter-Funktion für später
+    console.log('Filtern nach Tag:', tag);
+    // Du kannst hier eine Funktion wie filterTodos() erweitern
+}
     </script>
  </div>
     </div>
