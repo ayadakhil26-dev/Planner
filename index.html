@@ -305,16 +305,7 @@ body {
             font-size: 22px;
         }
 
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            background: white;
-            border-radius: 5px;
-            padding: 70px;
-            border: 3px solid var(--primary);
-            box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
-        }
-
+        
        .datetime-widget {
     background: linear-gradient(135deg, var(--primary), var(--accent));
     color: white;
@@ -323,8 +314,7 @@ body {
     text-align: center;
     margin-bottom: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-    position: relative;
+        position: relative;
     top: 0;
     left: 0;
     right: 0;
@@ -441,7 +431,8 @@ body {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
+margin-top: 60px !important;
 }
 
 .sidebar-btn {
@@ -449,6 +440,7 @@ body {
     border: none;
     color: white;
     padding: 15px 20px;
+padding-left: 15px !important;
     cursor: pointer;
     font-family: 'Patrick Hand', cursive;
     font-size: 1.1em;
@@ -457,9 +449,10 @@ body {
     border-left: 4px solid transparent;
     display: flex;
     align-items: center;
-    gap: 15px;
+  gap: 17px !important;
     position: relative;
     height: 50px;
+
 }
 .sidebar-btn:hover {
     background: rgba(255,255,255,0.2);
@@ -472,17 +465,17 @@ body {
     font-weight: 600;
 }
 
-.content-wrapper {
-    margin-left: 250px;
-    padding: 0;
-}
 
 .container {
-    max-width: 100%;
-    margin: 0 auto;
+   width: auto; 
+    max-width: 95%;
+margin-left: 80px !important;  
+    margin-right: 20px !important;
+margin-top: 20px;
+    margin-bottom: 20px;
     background: white;
     border-radius: 5px;
-    padding: 80px 70px 70px 70px;
+    padding: 70px 60px 60px 60px; 
     border: 3px solid var(--primary);
     box-shadow: 3px 3px 0 rgba(212, 134, 156, 0.3);
 }
@@ -1406,21 +1399,75 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
     background: linear-gradient(180deg, var(--primary), var(--accent));
     padding: 20px 0;
     box-shadow: 3px 0 15px rgba(0,0,0,0.2);
-    z-index: 1000;
+     z-index: 1500;
     overflow-x: hidden;
-    /* Die Transition sorgt für das sanfte Gleiten */
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s ease;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Sidebar im eingeklappten Zustand (schmal) */
+.sidebar.collapsed {
+    width: 60px; /* Nur so breit wie die Icons */
+}
+.sidebar-btn i {
+    /* Dieser Block sollte LEER sein oder gar nicht existieren */
+    /* Die Formatierung kommt vom span:first-child */
+}
+/* Verstecke den Text "Ayas Planer" und das Logo-Icon im schmalen Zustand */
+.sidebar.collapsed h1, 
+.sidebar.collapsed .sidebar-header i {
+    
+display: none !important;
+}
+
+/* Verstecke die Texte der Menüpunkte */
+.sidebar.collapsed .sidebar-item span {
+    display: none;
+}
+.sidebar-logo {
+    color: white !important;         /* Farbe auf Weiß */
+    font-family: 'Caveat';  /* Deine schöne Schrift */
+    font-size: 2.5rem;               /* Größe */
+    font-weight: bold;
+    padding: 20px 15px;
+    white-space: nowrap;             /* Sicher ist sicher: kein Umbruch */
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+.sidebar.collapsed .sidebar-logo {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+.sidebar-nav, .sidebar-logo {
+    margin-top: 5px; /* Verschiebt den Banner nach unten */
+        margin-bottom: 50px;
+    transition: opacity 0.4s ease;
+}
+/* Zentriere die Icons im schmalen Zustand */
+.sidebar.collapsed .sidebar-item i {
+    margin-right: 0;
+    width: 100%;
+    text-align: center;
+font-size: 1.4rem;
+}
+/* Sorgt für einen sauberen Übergang, wenn sie offen ist */
+.sidebar h1 {
+   color: white !important;       /* Erzwingt Weiß */
+    transition: opacity 0.3s ease;
+    padding: 0 10px;
+    margin: 0;
+    white-space: nowrap;
+    opacity: 1;
+}
 /* Zustand wenn die Sidebar eingeklappt ist (nur Icons sichtbar) */
 .sidebar.collapsed {
     width: 60px;
-}
+}f
 
 /* Content-Verschiebung */
 .content-wrapper {
-    margin-left: 250px;
-    transition: margin-left 0.4s ease;
+    margin-left: 60px !important;    /* Immer 60px Abstand, egal ob Sidebar offen oder zu */
+    width: calc(100% - 60px) !important;
+    transition: none !important;
 }
 
 .content-wrapper.shifted {
@@ -1431,7 +1478,7 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%); /* Standardmäßig ganz ausgeblendet */
-        width: 250px;
+        width: 70px; 
     }
     .sidebar.active {
         transform: translateX(0); /* Kommt von links reingefahren */
@@ -1468,12 +1515,12 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
     display: none;
 }
 
-/* Verhindert, dass Icons beim Einklappen springen */
 .sidebar.collapsed .sidebar-item i {
     margin-right: 0;
     width: 100%;
-}
-/* --- MOBILE VERHALTEN (Verschwinden) --- */
+    text-align: center;
+    display: block; /* NEU */
+}/* --- MOBILE VERHALTEN (Verschwinden) --- */
 @media (max-width: 768px) {
     .sidebar {
         width: 250px;
@@ -1513,7 +1560,11 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
         gap: 5px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-
+@media (min-width: 769px) {
+    .hamburger {
+        display: none !important;
+    }
+}
     .hamburger span {
         width: 24px;
         height: 3px;
@@ -1542,21 +1593,28 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
         display: block;
     }
 
-    .sidebar-logo {
-        font-size: 2em;
-        writing-mode: horizontal-tb;
-        text-orientation: mixed;
-        margin-bottom: 30px;
-        padding: 0 20px;
-    }
     
-    .sidebar-btn {
-        padding: 16px 20px;
-        justify-content: flex-start;
-        font-size: 1.1em;
-        gap: 12px;
-    }
+        .sidebar-logo {
+    font-size: 2.5em; /* GRÖßER */
+    color: white; /* WEIß */
+    font-weight: bold; /* FETT */
+    margin-bottom: 30px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0; /* Versteckt wenn collapsed */
+    visibility: hidden; /* Komplett unsichtbar */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.sidebar:hover .sidebar-logo {
+    opacity: 1; /* Sichtbar bei Hover */
+    visibility: visible;
+}
     
+        
     .sidebar-btn span:first-child {
         font-size: 1.4em;
     }
@@ -1565,31 +1623,30 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
         display: inline;
     }
 
-    /* CONTENT WRAPPER */
-    .content-wrapper {
-        margin-left: 0 !important;
-        padding: 0;
-    }
+   /* Der äußere Container muss IMMER den gleichen Platz lassen */
+.content-wrapper {
+    margin-left: 60px !important;    /* Bleibt IMMER bei 60px */
+    width: calc(100vw - 60px) !important; /* Breite ändert sich NIE */
+    transition: none !important;     /* Keine Bewegung, kein Wackeln */
+    position: relative;
+}
 
-    /* CONTAINER */
-    .container {
-        padding: 16px;
-        border-radius: 0;
-    }
+/* Auch wenn die Sidebar offen ist, darf dieser Wert NICHT auf 250px springen */
+.content-wrapper.shifted {
+    margin-left: 60px !important; 
+}
 
-    /* DATETIME BANNER */
-    .datetime-widget {
-        padding: 12px 16px;
-        margin-bottom: 12px;
-        border-radius: 0;
-    }
+/* Das Widget selbst */
+.datetime-widget {
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 0;
+    width: 100%;
+    /* Zentrierung innerhalb des festen Bereichs */
+    display: flex;
+    justify-content: center; 
+}
 
-    .datetime-widget > div {
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        gap: 12px !important;
-    }
 
     .mood-left {
         flex: 0 0 auto !important;
@@ -2180,60 +2237,83 @@ line-height: 1;  /* <-- NEU: Verhindert vertikales Verrutschen */
 
 @media (min-width: 769px) {
     .sidebar {
-        width: 70px;
+       transition: width 0.3s ease;
     }
     
     .sidebar:hover {
         width: 250px;
     }
     
-    .sidebar-logo {
-        font-size: 1.5em;
-        margin-bottom: 30px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        white-space: nowrap;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
+   .sidebar-logo {
+    font-size: 3.5em !important; /* GROß */
+    color: white !important; /* WEIß */
+    font-weight: 700 !important; /* FETT */
+    font-family: 'Caveat', cursive !important; /* SCHÖNERE SCHRIFT */
+    margin-bottom: 30px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar:hover .sidebar-logo {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.sidebar.collapsed .sidebar-logo {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
     .sidebar:hover .sidebar-logo {
-        font-size: 2em;
-    }
-    
+        opacity: 1;
+    }    
     .sidebar-btn {
-        padding: 15px 0;
-        justify-content: flex-start;
-        overflow: hidden;
-position: relative; 
-    }
-    
-   .sidebar-btn span:first-child {
+    padding: 15px 0;
+    justify-content: flex-start;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center; /* WICHTIG */
+}
+
+.sidebar-btn span:first-child {
     font-size: 1.3em;
-    min-width: 70px;
+    width: 60px; /* FESTE BREITE */
+    min-width: 60px; /* FESTE MIN-BREITE */
     text-align: center;
     flex-shrink: 0;
-    position: absolute;  /* NEU */
-    left: 0;  /* NEU */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute; /* BLEIBT AN DER STELLE */
+    left: 0;
+    top: 50%; /* ZENTRIERT VERTIKAL */
+    transform: translateY(-50%); /* PERFEKTE ZENTRIERUNG */
 }
-    
-    .sidebar-btn span:last-child {
-        opacity: 0;
-        white-space: nowrap;
-        transition: opacity 0.3s ease;
-     visibility: hidden;  /* NEU */
-    margin-left: 70px;  /* NEU - Platz für das Icon */
+
+.sidebar-btn span:last-child {
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+    visibility: hidden;
+    margin-left: 70px; /* Platz für das Icon lassen */
+    display: inline-block;
+    line-height: 50px; /* GLEICHE HÖHE WIE BUTTON */
 }
-    
-    .sidebar:hover .sidebar-btn span:last-child {
-        opacity: 1;
-visibility: visible;
-    }
+
+.sidebar:hover .sidebar-btn span:last-child {
+    opacity: 1;
+    visibility: visible;
+}
     
     .content-wrapper {
-        margin-left: 70px;
+        margin-left: 120px;
         transition: margin-left 0.3s ease;
     }
     
@@ -2262,7 +2342,26 @@ visibility: visible;
         color: white;
     }
 }
-   </style>
+const sidebar = document.querySelector('.sidebar');
+const contentWrapper = document.querySelector('.content-wrapper');
+
+// Initialer Zustand: Zu
+sidebar.classList.add('collapsed');
+contentWrapper.classList.add('shifted');
+
+// Öffnen bei Hover
+sidebar.addEventListener('mouseenter', () => {
+    sidebar.classList.remove('collapsed');
+    contentWrapper.classList.remove('shifted');
+});
+
+// Schließen wenn Maus weg
+sidebar.addEventListener('mouseleave', () => {
+    if (window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        contentWrapper.classList.add('shifted');
+    }
+});   </style>
 </head>
 
 <body>
@@ -2275,7 +2374,7 @@ visibility: visible;
 <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <!-- SIDEBAR -->
     <div class="sidebar">
-        <div class="sidebar-logo">Ayas Planer</div>
+        <div class="sidebar-logo">AyasPlaner</div>
         <nav class="sidebar-nav">
             <button class="sidebar-btn active" onclick="switchTab('todo')">
                 <span>✎</span> <span>Aufgaben</span>
@@ -4421,16 +4520,12 @@ function initSwipeGestures() {
 }
 // Sidebar Toggle für Mobile
 function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const wrapper = document.querySelector('.content-wrapper');
-    
-    // Prüfen, ob wir auf Desktop sind (Breite > 768px)
-    if (window.innerWidth > 768) {
-        sidebar.classList.toggle('collapsed');
-        wrapper.classList.toggle('shifted');
-    } else {
-        // Auf Mobile nutzen wir die 'active' Klasse zum Reinfahren
+    // Nur auf Mobile aktiv
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
         sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
     }
 }// Sidebar schließen wenn außerhalb geklickt (nur Mobile)
 document.addEventListener('click', (e) => {
@@ -4444,6 +4539,32 @@ document.addEventListener('click', (e) => {
         }
     }
 });
+const sidebar = document.querySelector('.sidebar');
+const contentWrapper = document.querySelector('.content-wrapper');
+
+// Initialzustand: Sidebar ist schmal (collapsed)
+sidebar.classList.add('collapsed');
+contentWrapper.classList.add('shifted');
+
+// AUTOMATIK: Ausklappen bei Mauskontakt
+sidebar.addEventListener('mouseenter', () => {
+    sidebar.classList.remove('collapsed');
+    contentWrapper.classList.remove('shifted');
+});
+
+// AUTOMATIK: Einklappen wenn Maus weggeht
+sidebar.addEventListener('mouseleave', () => {
+    // Nur auf Desktop (breiter als 768px) automatisch einklappen
+    if (window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        contentWrapper.classList.add('shifted');
+    }
+});
+
+// Für Mobilgeräte: Klick auf Hamburger-Menü (falls vorhanden)
+function toggleSidebar() {
+    sidebar.classList.toggle('active');
+}
 /* ========================================
    TAGS MANAGEMENT
    ======================================== */
